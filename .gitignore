@@ -45,3 +45,16 @@ $RECYCLE.BIN/
 Network Trash Folder
 Temporary Items
 .apdisk
+
+
+# VS solution and project files
+*.suo
+*.sln
+*.sdf
+
+
+# ignored folders
+build
+vs_projects
+common/libs
+common/include
