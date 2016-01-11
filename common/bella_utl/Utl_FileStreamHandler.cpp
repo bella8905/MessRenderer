@@ -10,6 +10,8 @@
 //  
 /////////////////////////////////////////////////////////////////
 
+#include <iterator>
+
 #include "Utl_FileStreamHandler.h"
 #include "Utl_LogMsg.h"
 
