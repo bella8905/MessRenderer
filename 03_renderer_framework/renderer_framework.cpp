@@ -101,7 +101,6 @@ void CTestApp::_setupScene() {
 	// cube 
 	CObj obj_cube( GEO_UNIT_CUBE );
 	obj_cube.SetupModelMatrix( translate_left, rot_x30, scale_s );
-	obj_cube._drawBB = true;
 	obj_cube._shaderType = SD_NORMAL_TEST;
 	_scene.AddObj( obj_cube );
 
@@ -109,14 +108,12 @@ void CTestApp::_setupScene() {
 	// obj_sphere._material = blinnMat;
 	obj_sphere.SetupModelMatrix( translate_right, rot_noRot, scale_xs );
 	obj_sphere._shaderType = SD_PHONG;
-	obj_sphere._drawBB = true;
 	_scene.AddObj( obj_sphere );
 
 
 	CObj obj_triangle( GEO_TRIANGLE );
 	obj_triangle.SetupModelMatrix( translate_center, rot_noRot, scale_s );
 	obj_triangle._shaderType = SD_NORMAL_TEST;
-	obj_triangle._drawBB = true;
 	_scene.AddObj( obj_triangle );
 
 }
@@ -125,6 +122,9 @@ void CTestApp::_setupScene() {
 void CTestApp::_startup() {
 	_initModules();
 	_setupScene();
+
+    glEnable( GL_DEPTH_TEST );
+    glDepthFunc( GL_LESS );
 
 	glCullFace( GL_BACK );
 	glFrontFace( GL_CCW );

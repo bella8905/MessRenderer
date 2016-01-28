@@ -58,7 +58,9 @@ public:
 
 	bool _selected;
 	static bool _drawBB;
+    static bool _drawWireframe;
 	static bool _drawAcball;
+    
 
 protected:
 

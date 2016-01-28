@@ -1,8 +1,11 @@
 #version 400
 
-in vec3 normal;
+in VS_OUT{
+    vec3 _normal;
+} fs_in;
+
 out vec4 fragColour;
 
 void main() {
-    fragColour = vec4( normal, 1.0 );
+    fragColour = vec4( fs_in._normal, 1.0 );
 }
