@@ -58,3 +58,4 @@ build
 vs_projects
 common/libs
 common/include
+MessRenderer.VC.opendb

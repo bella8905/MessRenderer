@@ -57,23 +57,27 @@ void CGeo::InitBoundBox() {
 		0, 4, 1, 5, 2, 6, 3, 7
 	};
 
+    // vao
 	glGenVertexArrays( 1, &_vao_boundBox );
 	glBindVertexArray( _vao_boundBox );
 
-
+    // vbo 
 	glGenBuffers( 1, &_vbo_boundBox );
 	glBindBuffer( GL_ARRAY_BUFFER, _vbo_boundBox );
 	glBufferData( GL_ARRAY_BUFFER, sizeof( cubeVertices ), cubeVertices, GL_STATIC_DRAW );
 	glVertexAttribPointer( 0, 3, GL_FLOAT, GL_FALSE, 0, 0 );
 	glEnableVertexAttribArray( 0 );
-	glBindBuffer( GL_ARRAY_BUFFER, 0 );
 
+    // ibo
+    glGenBuffers( 1, &_ibo_boundBox );
+    glBindBuffer( GL_ELEMENT_ARRAY_BUFFER, _ibo_boundBox );
+    glBufferData( GL_ELEMENT_ARRAY_BUFFER, sizeof( cubeIndices ), cubeIndices, GL_STATIC_DRAW );
+
+    // clear binding
 	glBindVertexArray( 0 );
+    glBindBuffer( GL_ARRAY_BUFFER, 0 );
+    glBindBuffer( GL_ELEMENT_ARRAY_BUFFER, 0 );
 
-	glGenBuffers( 1, &_ibo_boundBox );
-	glBindBuffer( GL_ELEMENT_ARRAY_BUFFER, _ibo_boundBox );
-	glBufferData( GL_ELEMENT_ARRAY_BUFFER, sizeof( cubeIndices ), cubeIndices, GL_STATIC_DRAW );
-	glBindBuffer( GL_ELEMENT_ARRAY_BUFFER, 0 );
 
 	_inited_boundBox = true;
 }
@@ -127,15 +131,12 @@ void CGeo::DrawModel( SHADER_TYPE t_shader, CMaterial* t_material, const mat4& t
 
 		glBindVertexArray( _vao_boundBox );
 
-		glBindBuffer( GL_ELEMENT_ARRAY_BUFFER, _ibo_boundBox );
-
 
 		CShaderContainer::GetInstance().BindShaderForDrawing( SD_SINGLE_COLOR, 0, 0, bbTfmMat );
 		glDrawElements( GL_LINE_LOOP, 4, GL_UNSIGNED_SHORT, NULL );
 		glDrawElements( GL_LINE_LOOP, 4, GL_UNSIGNED_SHORT, ( GLvoid* )( 4 * sizeof( GLushort ) ) );
 		glDrawElements( GL_LINES, 8, GL_UNSIGNED_SHORT, ( GLvoid* )( 8 * sizeof( GLushort ) ) );
 
-		glBindBuffer( GL_ELEMENT_ARRAY_BUFFER, 0 );
 		glBindVertexArray( 0 );
 	}
 
@@ -166,22 +167,23 @@ void CPrimGeo::DrawModel( SHADER_TYPE t_shader, CMaterial* t_material, const mat
 	//     glEnableVertexAttribArray( 0 );
 	//     glEnableVertexAttribArray( 1 );
 
-	glBindBuffer( GL_ELEMENT_ARRAY_BUFFER, _ibo );
+	//     glBindBuffer( GL_ELEMENT_ARRAY_BUFFER, _ibo );
 
 	glDrawElements( GL_TRIANGLES, _numOfIndices, GL_UNSIGNED_INT, NULL );
 
-	glBindBuffer( GL_ELEMENT_ARRAY_BUFFER, 0 );
+	//     glBindBuffer( GL_ELEMENT_ARRAY_BUFFER, 0 );
 	glBindVertexArray( 0 );
-	// glBindBuffer( GL_ARRAY_BUFFER, 0 );
+	//	   glBindBuffer( GL_ARRAY_BUFFER, 0 );
 
 }
 
 void CPrimGeo::genBufferData( const vector<SVertex>& t_vertices, const vector<GLuint>& t_indices ) {
 
-	// generate vao and vbos
+	// generate vao, vbo, ibo
 	glGenVertexArrays( 1, &_vao );
 	glBindVertexArray( _vao );
-
+	
+	// vbo
 	glGenBuffers( 1, &_vbo );
 	glBindBuffer( GL_ARRAY_BUFFER, _vbo );
 	glBufferData( GL_ARRAY_BUFFER, sizeof( SVertex ) * t_vertices.size(), &t_vertices[0], GL_STATIC_DRAW );
@@ -189,15 +191,16 @@ void CPrimGeo::genBufferData( const vector<SVertex>& t_vertices, const vector<GL
 	glVertexAttribPointer( 1, 3, GL_FLOAT, GL_FALSE, sizeof( SVertex ), ( void* )offsetof( SVertex, _normal ) );
 	glEnableVertexAttribArray( 0 );
 	glEnableVertexAttribArray( 1 );
-	glBindBuffer( GL_ARRAY_BUFFER, 0 );
 
-	glBindVertexArray( 0 );
-
+	// ibo
 	glGenBuffers( 1, &_ibo );
 	glBindBuffer( GL_ELEMENT_ARRAY_BUFFER, _ibo );
 	glBufferData( GL_ELEMENT_ARRAY_BUFFER, _numOfIndices * sizeof( GLuint ), &t_indices[0], GL_STATIC_DRAW );
-	glBindBuffer( GL_ELEMENT_ARRAY_BUFFER, 0 );
 
+
+	glBindVertexArray( 0 );
+	glBindBuffer( GL_ARRAY_BUFFER, 0 );
+	glBindBuffer( GL_ELEMENT_ARRAY_BUFFER, 0 );
 
 }
 
@@ -229,7 +232,7 @@ bool CTriangleGeo::initModel() {
 	indices.push_back( 1 );
 	indices.push_back( 2 );
 
-	_numOfIndices = indices.size();
+	_numOfIndices = (int)indices.size();
 	genBufferData( vertices, indices );
 
 	_inited = true;
@@ -369,7 +372,7 @@ bool CUnitSphereGeo::initModel() {
 		}
 	}
 
-	_numOfIndices = indices.size();
+	_numOfIndices = (int)indices.size();
 
 	genBufferData( vertices, indices );
 
@@ -467,7 +470,7 @@ void CModelGeo::SMesh::InitMesh( const aiMesh* t_aiMesh, bool t_unified ) {
 		}
 	}
 
-	_numOfIndices = indices.size();
+	_numOfIndices = (int)indices.size();
 	glGenBuffers( 1, &_ibo );
 	glBindBuffer( GL_ELEMENT_ARRAY_BUFFER, _ibo );
 	glBufferData( GL_ELEMENT_ARRAY_BUFFER, _numOfIndices * sizeof( GLuint ), &indices[0], GL_STATIC_DRAW );
