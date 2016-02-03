@@ -2,9 +2,9 @@
 //
 //  Practice_11_19_14 - camera
 //
-//  Implementation of Anton's OpenGL tutorial
+//  MessRenderer - A very messy renderer
 //
-//  Copyright (c) 2014 Bella Q
+//  Copyright (c) 2016 Bella Q
 //  
 /////////////////////////////////////////////////////////////////
 

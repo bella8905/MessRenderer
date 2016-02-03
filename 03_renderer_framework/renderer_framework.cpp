@@ -12,6 +12,7 @@
 #include "Geometry.h"
 #include "Light.h"
 #include "Scene.h"
+#include "View.h"
 #include "stb_image/stb_image_write.h"
 #include "assimp/scene.h"
 #include "glm/gtx/transform.hpp"
@@ -58,19 +59,15 @@ void CTestApp::_deinitModules() {
 void CTestApp::_setupScene() {
 	////////////////////////////////////////////////////////
 	// init scenes
-	// camera
-	// view matrix
-	glm::vec3 camPos( 0.f, 0.f, 2.0f );
-	glm::vec3 camUp( 0.f, 1.0f, 0.f );
-	glm::vec3 camTarget( 0.f, 0.f, 0.f );
-	glm::vec3 camFace = glm::normalize( camTarget - camPos );
-	float clipNear = 0.1f;
-	float clipFar = 100.f;
-	// vertical fov
-	float clipFOV = 60.f;
-	float clipAspect = ( float )_info._winWidth / ( float )_info._winHeight;
 
-	g_simpleCam.Setup( camPos, camFace, camUp, clipNear, clipFar, clipFOV, clipAspect );
+ 	glm::vec3 camPos( 0.f, 0.f, 2.0f );
+ 	glm::vec3 camTarget( 0.f, 0.f, 0.f );
+ 	glm::vec3 camFace = glm::normalize( camTarget - camPos );
+
+	CView view;
+	view.SetCameraPostionFaceAndUp( Utl::ToPositon( camPos ), Utl::ToDirection( camFace ) );
+	view.SetHorizontalFieldOfView( Utl::DegToRad( 80.f ) );
+	View_SetAsActive( view );
 
 	// light
 	vec3 lightPos( 0.f, 0.f, 2.f );

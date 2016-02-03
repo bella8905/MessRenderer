@@ -2,14 +2,14 @@
 //
 //  Practice_11_19_14 - geometry
 //
-//  Implementation of Anton's OpenGL tutorial
+//  MessRenderer - A very messy renderer
 //
 // a geo class including vao, vbos and ibo for rendering
 // it doesn't include any transformation,  material / shader information
 // make it a singleton, and never instantiate more than 1 instances
 // pass in a transformation matrix, shader and matertial for rendering
 //
-//  Copyright (c) 2014 Bella Q
+//  Copyright (c) 2016 Bella Q
 //  
 /////////////////////////////////////////////////////////////////
 

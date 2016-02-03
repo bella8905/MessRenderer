@@ -2,12 +2,12 @@
 //
 //  Practice_11_19_14 - object
 //
-//  Implementation of Anton's OpenGL tutorial
+//  MessRenderer - A very messy renderer
 //
 // an obj is the real object in scene
 // which includes the geo type, model transformation, material info, and shader info
 //
-//  Copyright (c) 2014 Bella Q
+//  Copyright (c) 2016 Bella Q
 //  
 /////////////////////////////////////////////////////////////////
 #pragma once

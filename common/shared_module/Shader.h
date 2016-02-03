@@ -2,9 +2,9 @@
 //
 //  Practice_11_19_14 - shader
 //
-//  Implementation of Anton's OpenGL tutorial
+//  MessRenderer - A very messy renderer
 //
-//  Copyright (c) 2014 Bella Q
+//  Copyright (c) 2016 Bella Q
 //  
 /////////////////////////////////////////////////////////////////
 
@@ -69,15 +69,12 @@ public:
 
 	vec4 _vertexColor;
 
-protected:
-	CCamera* _camera;
 
 protected:
 	virtual void initSP( const std::string& t_vs, const std::string& t_fs, const std::string& t_gs = "", const std::string& t_ts = "" );
 
 public:
 	void BindShaderWithObjectForDrawing( CGeo* t_object, CMaterial* t_material, const mat4& t_trandform );
-	void SetCamera( CCamera* t_camera ) { _camera = t_camera; }
 };
 
 class CSingleColorShader : public CPerspCamShader {

@@ -2,14 +2,14 @@
 //
 //  Practice_11_19_14 - geometry
 //
-//  Implementation of Anton's OpenGL tutorial
+//  MessRenderer - A very messy renderer
 //
 // a geo class including vao, vbos and ibo for rendering
 // it doesn't include any transformation,  material / shader information
 // make it a singleton, and never instantiate more than 1 instances
 // pass in a transformation matrix, shader and matertial for rendering
 //
-//  Copyright (c) 2014 Bella Q
+//  Copyright (c) 2016 Bella Q
 //  
 /////////////////////////////////////////////////////////////////
 
@@ -169,7 +169,7 @@ public:
 	virtual void DrawModel( SHADER_TYPE t_shader, CMaterial* t_material, const mat4& t_modelMatrix, bool t_drawBB );
 	bool IsInited() { return _inited; }
 
-	mat4& GetPreProcessedModelMat() { return _preprocessModelMatrix; }
+	const mat4& GetPreProcessedModelMat() { return _preprocessModelMatrix; }
 	SBoundBox& GetBB() { return _boundBox; }
 
 	// init / deinit boundbox buffers, only do it once
@@ -191,13 +191,29 @@ public:
 	~CPrimGeo() { deinitModel(); }
 
 protected:
-	// we need to keep track of vao loc so we can bind to it and draw our mesh later
+	///////////////////////////////////////////////////////////////////////////////////
+	//
+	// vertex attributes
+	// vbo, ibo, vao
+	//
+	// keep track of vao loc so we can bind it, let it remember the setups of vbo and ibo
+	// and draw our mesh later
 	// but we also need to keep track of vbo loc so we can clear the buffer obj when we are done with this mesh
 	// delete vao only removes the references to vbos
 	// http://stackoverflow.com/questions/14274860/does-gldeletevertexarrays-lead-to-deletion-of-vbos-associated-with-vao-being-de
+	//
+	///////////////////////////////////////////////////////////////////////////////////
 	GLuint _vao;
 	GLuint _vbo;    // use a single buffer obj for pos and normal  
 	GLuint _ibo;    // we'd like to use drawElement rather than drawArray. It saves space and is faster.
+
+	///////////////////////////////////////////////////////////////////////////////////
+	// 
+	// uniforms
+	// 
+	///////////////////////////////////////////////////////////////////////////////////
+
+
 	int _numOfIndices;
 
 protected:
