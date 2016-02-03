@@ -65,9 +65,7 @@ public:
 
 public:
 	// uniform variable names
-	GLint _uni_inputColorLoc, _uni_viewMatLoc, _uni_projMatLoc, _uni_modelMatLoc;
-
-	vec4 _vertexColor;
+	GLint _uni_viewMatLoc, _uni_projMatLoc, _uni_modelMatLoc;
 
 
 protected:
@@ -81,6 +79,16 @@ class CSingleColorShader : public CPerspCamShader {
 public:
 	CSingleColorShader();
 	~CSingleColorShader() {}
+
+public:
+    GLint _uni_inputColorLoc;
+    vec4 _vertexColor;
+
+protected:
+    virtual void initSP( const std::string& t_vs, const std::string& t_fs, const std::string& t_gs = "", const std::string& t_ts = "" );
+
+public:
+    void BindShaderWithObjectForDrawing( CGeo* t_object, CMaterial* t_material, const mat4& t_trandform );
 };
 
 

@@ -295,7 +295,7 @@ void CShader::initSP( const std::string& t_vs, const std::string& t_fs, const st
 //////////////////////////////////////////////////////////
 // a simple perspective camera shader
 
-CPerspCamShader::CPerspCamShader() :  _vertexColor( vec4( 1.0f, 0.0f, 0.0f, 1.0f ) ), _uni_inputColorLoc( -1 ), _uni_modelMatLoc( -1 ), _uni_projMatLoc( -1 ), _uni_viewMatLoc( ) {
+CPerspCamShader::CPerspCamShader() :  _uni_modelMatLoc( -1 ), _uni_projMatLoc( -1 ), _uni_viewMatLoc( ) {
 	// initSP( PERSP_CAM_SHADER_VS_FILE, PERSP_CAM_SHADER_FS_FILE );
 }
 
@@ -321,10 +321,6 @@ void CPerspCamShader::BindShaderWithObjectForDrawing( CGeo* t_object, CMaterial*
 
 	CShader::BindShader();
 
-	if( _uni_inputColorLoc >= 0 ) {
-		glUniform4fv( _uni_inputColorLoc, 1, glm::value_ptr( _vertexColor ) );
-	}
-
 	mat4 modelMat = ( t_object ) ? ( t_trandform * ( t_object->GetPreProcessedModelMat() ) ) : t_trandform;
 	glUniformMatrix4fv( _uni_viewMatLoc, 1, GL_FALSE, glm::value_ptr( view->GetWorld2ViewMatrix() ) );
 	glUniformMatrix4fv( _uni_projMatLoc, 1, GL_FALSE, glm::value_ptr( view->GetView2ProjMatrix() ) );
@@ -338,8 +334,26 @@ const std::string SINGLE_COLOR_SHADER_VS_FILE = "shaders/simple_lookAtCam.vert";
 const std::string SINGLE_COLOR_SHADER_FS_FILE = "shaders/simple.frag";
 
 
-CSingleColorShader::CSingleColorShader() {
+CSingleColorShader::CSingleColorShader() : _vertexColor( vec4( 1.0f, 0.0f, 0.0f, 1.0f ) ), _uni_inputColorLoc( -1 ) {
 	initSP( SINGLE_COLOR_SHADER_VS_FILE, SINGLE_COLOR_SHADER_FS_FILE );
+}
+
+void CSingleColorShader::initSP( const std::string& t_vs, const std::string& t_fs, const std::string& t_gs, const std::string& t_ts ) {
+
+    CPerspCamShader::initSP( t_vs, t_fs, t_gs, t_ts );
+
+    _uni_inputColorLoc = glGetUniformLocation( _sp, "inputColor" );
+
+    assert( _uni_inputColorLoc >= 0 );
+
+}
+
+
+// bind phong shader specific content for drawing
+void CSingleColorShader::BindShaderWithObjectForDrawing( CGeo* t_object, CMaterial* t_material, const mat4& t_trandform ) {
+    CPerspCamShader::BindShaderWithObjectForDrawing( t_object, t_material, t_trandform );
+    glUniform4fv( _uni_inputColorLoc, 1, glm::value_ptr( _vertexColor ) );
+
 }
 
 //////////////////////////////////////////////////////////
