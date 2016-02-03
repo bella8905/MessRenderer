@@ -64,20 +64,23 @@ std::string CShader::glTypeToString( GLenum t_type ) {
 
 // print errors in shader compilation
 void CShader::printShaderInfoLog( const GLuint& t_shaderIndex ) {
-	int maxLength = 2048;
-	int actualLength = 0;
-	char log[2048];
-	glGetShaderInfoLog( t_shaderIndex, maxLength, &actualLength, log );
-	LogMsg << "shader info log for GL index " << t_shaderIndex << LogEndl << log << LogEndl << LogEndl;
+    GLint logLength;
+    glGetShaderiv( t_shaderIndex, GL_INFO_LOG_LENGTH, &logLength );
+    std::string str;
+    str.reserve( logLength );
+    glGetShaderInfoLog( t_shaderIndex, logLength, NULL, const_cast<GLchar*>( str.c_str() ) );
+
+	LogMsg << "shader info log for GL index " << t_shaderIndex << LogEndl << str << LogEndl << LogEndl;
 }
 
 // print errors in shader linking
 void CShader::printSPInfoLog( const GLuint& t_spIndex ) {
-	int maxLength = 2048;
-	int actualLength = 0;
-	char log[2048];
-	glGetProgramInfoLog( t_spIndex, maxLength, &actualLength, log );
-	LogMsg << "program info log for GL index " << t_spIndex << LogEndl << log << LogEndl << LogEndl;
+    GLint logLength;
+    glGetProgramiv( t_spIndex, GL_INFO_LOG_LENGTH, &logLength );
+    std::string str;
+    str.reserve( logLength );
+	glGetProgramInfoLog( t_spIndex, logLength, NULL, const_cast<GLchar*>( str.c_str() )  );
+	LogMsg << "program info log for GL index " << t_spIndex << LogEndl << str << LogEndl << LogEndl;
 }
 
 
@@ -225,6 +228,9 @@ GLuint CShader::createShaderProgram( const GLint& t_vs, const GLint& t_gs, const
 		glDetachShader( sp, t_ts );
 		glDeleteShader( t_ts );
 	}
+
+    // print sp info
+    printSPInfo( sp );
 
 	return sp;
 }
