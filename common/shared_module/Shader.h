@@ -21,7 +21,7 @@ class CShader {
 public:
 	// CShader( const string& t_vs, const string& t_fs );
 	CShader() : _spCreated( false ), _sp( 0 ) {}
-	virtual ~CShader() {}
+	virtual ~CShader() { onDeinit(); }
 
 protected:
 	std::string _vs, _fs, _ts, _gs;
@@ -29,7 +29,19 @@ protected:
 	bool _spCreated;
 
 protected:
-	virtual void initSP( const std::string& t_vs, const std::string& t_fs, const std::string& t_gs = "", const std::string& t_ts = "" );
+	void initSP( const std::string& t_vs, const std::string& t_fs, const std::string& t_gs = "", const std::string& t_ts = "" );
+    
+    /////////////////////////////////////////////////////////////////
+    //
+    // init and deinit per shader
+    //
+    // init takes place after shaders are compiled and linked
+    // and shader program is validated
+    //
+    /////////////////////////////////////////////////////////////////
+    virtual void onInit() {}
+    virtual void onDeinit() {}
+
 	// create a shader obj, return the shader obj index
 	std::string glTypeToString( GLenum t_type );
 	void printShaderInfoLog( const GLuint& t_shaderIndex );
@@ -56,12 +68,16 @@ public:
 	virtual void BindShaderWithObjectForDrawing( CGeo* t_object, CMaterial* t_material, const mat4& t_trandform ) = 0;
 };
 
-
-// a simple shader which creates a perspective view
-class CPerspCamShader : public CShader {
+/////////////////////////////////////////////////////////////////
+//
+// a shader which takes the M(model)V(view)P(projection) matrices.
+// to transform points to NDC
+//
+/////////////////////////////////////////////////////////////////
+class CMVPShader : public CShader {
 public:
-	CPerspCamShader();
-	~CPerspCamShader() = 0;
+	CMVPShader();
+	~CMVPShader() = 0;
 
 public:
 	// uniform variable names
@@ -69,13 +85,26 @@ public:
 
 
 protected:
-	virtual void initSP( const std::string& t_vs, const std::string& t_fs, const std::string& t_gs = "", const std::string& t_ts = "" );
+    virtual void onInit();
+
+    /////////////////////////////////////////////////////////////////
+    //
+    // init per MVP shader
+    //
+    /////////////////////////////////////////////////////////////////
+    virtual void onInitMVPShader() {}
 
 public:
 	void BindShaderWithObjectForDrawing( CGeo* t_object, CMaterial* t_material, const mat4& t_trandform );
 };
 
-class CSingleColorShader : public CPerspCamShader {
+
+/////////////////////////////////////////////////////////////////
+//
+// a MVP shader which paint points with a single color
+//
+/////////////////////////////////////////////////////////////////
+class CSingleColorShader : public CMVPShader {
 public:
 	CSingleColorShader();
 	~CSingleColorShader() {}
@@ -85,14 +114,68 @@ public:
     vec4 _vertexColor;
 
 protected:
-    virtual void initSP( const std::string& t_vs, const std::string& t_fs, const std::string& t_gs = "", const std::string& t_ts = "" );
+    virtual void onInitMVPShader();
 
 public:
     void BindShaderWithObjectForDrawing( CGeo* t_object, CMaterial* t_material, const mat4& t_trandform );
 };
 
 
-class CPhongShader : public CPerspCamShader {
+
+/////////////////////////////////////////////////////////////////
+//
+// a MVP shader which counts the covered area of the frame.
+//
+// the shader should hold a area counter variable which 
+// can be used for subsequent to do the actual rendering.
+// 
+// this shader SHOULD NOT draw anything to the framebuffer.
+//
+/////////////////////////////////////////////////////////////////
+class CAreaCountingShader : public CMVPShader {
+public:
+    CAreaCountingShader();
+    ~CAreaCountingShader() {}
+
+protected:
+    GLuint _area_buffer;
+
+    virtual void onInitMVPShader();
+    virtual void onDeinit();
+
+public:
+    void BindShaderWithObjectForDrawing( CGeo* t_object, CMaterial* t_material, const mat4& t_trandform );
+};
+
+
+
+/////////////////////////////////////////////////////////////////
+//
+// a MVP shader which simply paints the area with brightness
+// based on distance.
+//
+// this shader should be a subsequence of an AreaCounting shader.
+//
+/////////////////////////////////////////////////////////////////
+class CAreaBasedPaintingShader : public CMVPShader {
+public:
+    CAreaBasedPaintingShader();
+    ~CAreaBasedPaintingShader() {}
+
+protected:
+    virtual void onInitMVPShader();
+
+public:
+    // void BindShaderWithObjectForDrawing( CGeo* t_object, CMaterial* t_material, const mat4& t_trandform );
+};
+
+
+/////////////////////////////////////////////////////////////////
+//
+// a MVP shader which simulates the blinn phone lighting model
+//
+/////////////////////////////////////////////////////////////////
+class CPhongShader : public CMVPShader {
 public:
 	CPhongShader();
 	~CPhongShader() {}
@@ -103,7 +186,7 @@ protected:
 	CLight* _light;
 
 protected:
-	virtual void initSP( const std::string& t_vs, const std::string& t_fs, const std::string& t_gs = "", const std::string& t_ts = "" );
+    virtual void onInitMVPShader();
 
 public:
 	void BindShaderWithObjectForDrawing( CGeo* t_object, CMaterial* t_material, const mat4& t_transform );
@@ -111,9 +194,17 @@ public:
 };
 
 
-
-// a shader used to draw object bound box
-class CTestNormalShader : public CPerspCamShader {
+/////////////////////////////////////////////////////////////////
+//
+// a shader used to test object normals
+//
+// normal is used to paint the point,
+// eg., 
+// a point with normal { 1, 0, 0 } will be painted to red
+// a point with normal { 0, 1, 0 } will be painted to green
+//
+/////////////////////////////////////////////////////////////////
+class CTestNormalShader : public CMVPShader {
 public:
 	CTestNormalShader();
 	~CTestNormalShader() {}

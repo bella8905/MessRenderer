@@ -10,7 +10,7 @@ CScene::~CScene() {
 }
 
 
-void CScene::DrawScene() {
+void CScene::Draw() {
 	for( us i = 0; i < _objects.size(); ++i ) {
 		_objects[i].DrawObj();
 	}
@@ -22,6 +22,10 @@ void CScene::AddObj( CObj& t_obj ) {
 
 void CScene::AddObjsFromFile( const std::string t_file ) {
 
+}
+
+void CScene::ClearObjs() {
+    _objects.clear();
 }
 
 int CScene::GetRayHitObjIdx( const Utl::SRay& t_ray ) {
@@ -44,7 +48,7 @@ void CScene::RayIntersectWithArcball( const Utl::SRay& t_ray, const bool& t_isSt
 	_objects[_selectedObjIdx].RayIntersectTestWithArcball( t_ray, t_isStart );
 }
 
-void CScene::UpdateScene() {
+void CScene::Update() {
 	// update selected obj
 	for( int i = 0; i < ( int )_objects.size(); ++i ) {
 		if( i == _selectedObjIdx ) {

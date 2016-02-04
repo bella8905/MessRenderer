@@ -3,7 +3,7 @@
 //  renderer framework - main
 //
 //
-//  Copyright (c) 2015 Bella Q
+//  Copyright (c) 2016 Bella Q
 //  
 /////////////////////////////////////////////////////////////////
 

@@ -264,28 +264,34 @@ void CView::SetCameraPostionFaceAndUp( vec4 t_pos, vec4 t_facing, vec4 t_up ) {
 	vec3 x = glm::cross( up, z );
 	vec3 y = glm::cross( z, x );
 
+// 
+// 	// inverse of a translation matrix
+// 	// T(v)^-1 = T(-v)
+// 	mat4 t( vec4( 1.f, 0.f, 0.f, 0.f ),
+// 			vec4( 0.f, 1.f, 0.f, 0.f ),
+// 			vec4( 0.f, 0.f, 1.f, 0.f ),
+// 			vec4( -pos, 1.f ) );
+// 
+// 	// inverse of a rotation matrix
+// 	// for orthonormalized matrix,
+// 	// R(v)^-1 = transpose( R(v) )
+// 	mat4 r( vec4( x.x, y.x, z.x, 0.f ),
+// 			vec4( x.y, y.y, z.y, 0.f ),
+// 			vec4( x.z, y.z, z.z, 0.f ),
+// 			vec4( 0.f, 0.f, 0.f, 1.f ) );
+// 
+// 	
+// 	_world2ViewMatrix = r * t;
 
-	// inverse of a translation matrix
-	// T(v)^-1 = T(-v)
-	mat4 t( vec4( 1.f, 0.f, 0.f, 0.f ),
-			vec4( 0.f, 1.f, 0.f, 0.f ),
-			vec4( 0.f, 0.f, 1.f, 0.f ),
-			vec4( -pos, 1.f ) );
-
-	// inverse of a rotation matrix
-	// for orthonormalized matrix,
-	// T(v)^-1 = transpose( T(v) )
-	mat4 r( vec4( x.x, y.x, z.x, 0.f ),
-			vec4( x.y, y.y, z.y, 0.f ),
-			vec4( x.z, y.z, z.z, 0.f ),
-			vec4( 0.f, 0.f, 0.f, 1.f ) );
-
-	
-	_world2ViewMatrix = r * t;
-
+    _view2WorldMatrix = mat4( 
+                                Utl::ToDirection( x ), 
+                                Utl::ToDirection( y ), 
+                                Utl::ToDirection( z ), 
+                                t_pos 
+                                );
 	// dirty flags
-	_dirtyFlags |= _DIRTY_FLAG_VIEW_TO_WORLD_MATRIX | _DIRTY_FLAG_WORLD_TO_PROJ_MATRIX;
-	_dirtyFlags &= ~_DIRTY_FLAG_WORLD_TO_VIEW_MATRIX;
+	_dirtyFlags |= _DIRTY_FLAG_WORLD_TO_VIEW_MATRIX | _DIRTY_FLAG_WORLD_TO_PROJ_MATRIX;
+	_dirtyFlags &= ~_DIRTY_FLAG_VIEW_TO_WORLD_MATRIX;
 }
 
 
@@ -329,4 +335,22 @@ void CView::SetAspectRatio( float t_aspect ) {
 	// dirty flags
 	_dirtyFlags |= _DIRTY_FLAG_VIEW_TO_PROJ_MATRIX | _DIRTY_FLAG_PROJ_TO_VIEW_MATRIX | _DIRTY_FLAG_WORLD_TO_PROJ_MATRIX;
 
+}
+
+
+void CView::GetCameraPosition( vec4& t_pos ) {
+    mat4 view2world = GetView2WorldMatrix();
+    t_pos = view2world[3];
+}
+
+void CView::GetCameraPositionFaceUpAndRight( vec4& t_pos, vec4& t_face, vec4& t_up, vec4& t_right ) {
+    mat4 view2world = GetView2WorldMatrix();
+    // tx, ty, tz
+    t_pos   = view2world[3];
+    // r00, r01, r02
+    t_right = view2world[0];
+    // r10, r11, r12
+    t_up    = view2world[1];
+    // r20, r21, r22
+    t_face  = -view2world[2];
 }

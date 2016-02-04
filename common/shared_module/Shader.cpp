@@ -20,8 +20,12 @@
 
 static const std::string SHADER_PATH_PREPEND = "../../common/";
 
-///////////////////////////////////////////////
+
+/////////////////////////////////////////////////////////////////
+//
 // Shader / Shader Program Error Checking
+//
+/////////////////////////////////////////////////////////////////
 
 // read in txt file as std std::strings
 bool CShader::readFileToStr( const char* t_file, std::string& t_fileContentStr ) {
@@ -289,33 +293,35 @@ void CShader::initSP( const std::string& t_vs, const std::string& t_fs, const st
 	}
 
 	createShaderProgram();
+
+    onInit();
 }
 
 
-//////////////////////////////////////////////////////////
-// a simple perspective camera shader
-
-CPerspCamShader::CPerspCamShader() :  _uni_modelMatLoc( -1 ), _uni_projMatLoc( -1 ), _uni_viewMatLoc( ) {
+/////////////////////////////////////////////////////////////////
+//
+// MVP shader
+//
+/////////////////////////////////////////////////////////////////
+CMVPShader::CMVPShader() :  _uni_modelMatLoc( -1 ), _uni_projMatLoc( -1 ), _uni_viewMatLoc( ) {
 	// initSP( PERSP_CAM_SHADER_VS_FILE, PERSP_CAM_SHADER_FS_FILE );
 }
 
-CPerspCamShader::~CPerspCamShader() {
+CMVPShader::~CMVPShader() {
 }
 
-void CPerspCamShader::initSP( const std::string& t_vs, const std::string& t_fs, const std::string& t_gs, const std::string& t_ts ) {
+void CMVPShader::onInit() {
+    // uniforms
+    _uni_viewMatLoc = glGetUniformLocation( _sp, "view" );
+    _uni_projMatLoc = glGetUniformLocation( _sp, "proj" );
+    _uni_modelMatLoc = glGetUniformLocation( _sp, "model" );
+    assert( _uni_projMatLoc >= 0 && _uni_viewMatLoc >= 0 && _uni_modelMatLoc >= 0 );
 
-	CShader::initSP( t_vs, t_fs, t_gs, t_ts );
-
-	// uniforms
-	_uni_viewMatLoc = glGetUniformLocation( _sp, "view" );
-	_uni_projMatLoc = glGetUniformLocation( _sp, "proj" );
-	_uni_modelMatLoc = glGetUniformLocation( _sp, "model" );
-	assert( /*_uni_inputColorLoc >= 0 && */_uni_projMatLoc >= 0 && _uni_viewMatLoc >= 0 && _uni_modelMatLoc >= 0 );
-
+    onInitMVPShader();
 }
 
 // bind perspective camera shader specific content for drawing
-void CPerspCamShader::BindShaderWithObjectForDrawing( CGeo* t_object, CMaterial* t_material, const mat4& t_trandform ) {
+void CMVPShader::BindShaderWithObjectForDrawing( CGeo* t_object, CMaterial* t_material, const mat4& t_trandform ) {
 	CView* view = View_GetActive();
 	assert( view );
 
@@ -328,8 +334,11 @@ void CPerspCamShader::BindShaderWithObjectForDrawing( CGeo* t_object, CMaterial*
 }
 
 
-//////////////////////////////////////////////////////////
+/////////////////////////////////////////////////////////////////
+//
 // single color shader
+//
+/////////////////////////////////////////////////////////////////
 const std::string SINGLE_COLOR_SHADER_VS_FILE = "shaders/simple_lookAtCam.vert";
 const std::string SINGLE_COLOR_SHADER_FS_FILE = "shaders/simple.frag";
 
@@ -338,26 +347,88 @@ CSingleColorShader::CSingleColorShader() : _vertexColor( vec4( 1.0f, 0.0f, 0.0f,
 	initSP( SINGLE_COLOR_SHADER_VS_FILE, SINGLE_COLOR_SHADER_FS_FILE );
 }
 
-void CSingleColorShader::initSP( const std::string& t_vs, const std::string& t_fs, const std::string& t_gs, const std::string& t_ts ) {
 
-    CPerspCamShader::initSP( t_vs, t_fs, t_gs, t_ts );
-
+void CSingleColorShader::onInitMVPShader() {
     _uni_inputColorLoc = glGetUniformLocation( _sp, "inputColor" );
-
     assert( _uni_inputColorLoc >= 0 );
-
 }
 
 
 // bind phong shader specific content for drawing
 void CSingleColorShader::BindShaderWithObjectForDrawing( CGeo* t_object, CMaterial* t_material, const mat4& t_trandform ) {
-    CPerspCamShader::BindShaderWithObjectForDrawing( t_object, t_material, t_trandform );
+    CMVPShader::BindShaderWithObjectForDrawing( t_object, t_material, t_trandform );
     glUniform4fv( _uni_inputColorLoc, 1, glm::value_ptr( _vertexColor ) );
 
 }
 
-//////////////////////////////////////////////////////////
+
+/////////////////////////////////////////////////////////////////
+//
+// area counting shader
+//
+/////////////////////////////////////////////////////////////////
+const std::string AREA_COUNTING_SHADER_VS_FILE = "shaders/simple_lookAtCam.vert";
+const std::string AREA_COUNTING_SHADER_FS_FILE = "shaders/area_counting.frag";
+
+
+CAreaCountingShader::CAreaCountingShader()  {
+    initSP( AREA_COUNTING_SHADER_VS_FILE, AREA_COUNTING_SHADER_FS_FILE );
+}
+
+
+void CAreaCountingShader::onInitMVPShader() {
+    glGenBuffers( 1, &_area_buffer );
+    glBindBuffer( GL_ATOMIC_COUNTER_BUFFER, _area_buffer );
+    glBufferData( GL_ATOMIC_COUNTER_BUFFER, sizeof( GLuint ), NULL, GL_DYNAMIC_COPY );
+    glBindBufferBase( GL_ATOMIC_COUNTER_BUFFER, 0, _area_buffer );
+
+    // reset data
+    GLuint* counter = (GLuint*) glMapBufferRange( GL_ATOMIC_COUNTER_BUFFER, 0, sizeof( GLuint ), GL_MAP_WRITE_BIT | GL_MAP_INVALIDATE_RANGE_BIT );
+    *counter = 0;
+
+    // clear binding 
+    glBindBuffer( GL_ATOMIC_COUNTER_BUFFER, 0 );
+    glBindBufferBase( GL_ATOMIC_COUNTER_BUFFER, 0, 0 );
+}
+
+void CAreaCountingShader::onDeinit() {
+    glDeleteBuffers( &_area_buffer );
+}
+
+
+void CAreaCountingShader::BindShaderWithObjectForDrawing( CGeo* t_object, CMaterial* t_material, const mat4& t_trandform ) {
+    CMVPShader::BindShaderWithObjectForDrawing( t_object, t_material, t_trandform );
+    // use the buffer
+    glBindBufferBase( GL_ATOMIC_COUNTER_BUFFER, 0, _area_buffer );
+}
+
+
+/////////////////////////////////////////////////////////////////
+//
+// area based painting shader
+//
+/////////////////////////////////////////////////////////////////
+const std::string AREA_BASED_PAINTING_SHADER_VS_FILE = "shaders/simple_lookAtCam.vert";
+const std::string AREA_BASED_PAINTING_SHADER_FS_FILE = "shaders/simple.frag";
+
+
+CAreaBasedPaintingShader::CAreaBasedPaintingShader()  {
+    initSP( AREA_BASED_PAINTING_SHADER_VS_FILE, AREA_BASED_PAINTING_SHADER_VS_FILE );
+}
+
+
+
+void CAreaBasedPaintingShader::onInitMVPShader() {
+
+}
+
+
+
+/////////////////////////////////////////////////////////////////
+//
 // phone shader
+//
+/////////////////////////////////////////////////////////////////
 const std::string PHONG_SHADER_VS_FILE = "shaders/phong.vert";
 const std::string PHONG_SHADER_FS_FILE = "shaders/phong.frag";
 
@@ -368,21 +439,19 @@ _uni_mtlKs( -1 ), _uni_mtlKd( -1 ), _uni_mtlKa( -1 ), _uni_mtlSplExp( -1 ) {
 	initSP( PHONG_SHADER_VS_FILE, PHONG_SHADER_FS_FILE );
 }
 
-void CPhongShader::initSP( const std::string& t_vs, const std::string& t_fs, const std::string& t_gs, const std::string& t_ts ) {
 
-	CPerspCamShader::initSP( t_vs, t_fs, t_gs, t_ts );
+void CPhongShader::onInitMVPShader() {
+    _uni_lightPos = glGetUniformLocation( _sp, "light_pos_world" );
+    _uni_lightLs = glGetUniformLocation( _sp, "ls" );
+    _uni_lightLd = glGetUniformLocation( _sp, "ld" );
+    _uni_lightLa = glGetUniformLocation( _sp, "la" );
+    _uni_mtlKs = glGetUniformLocation( _sp, "ks" );
+    _uni_mtlKd = glGetUniformLocation( _sp, "kd" );
+    _uni_mtlKa = glGetUniformLocation( _sp, "ka" );
+    _uni_mtlSplExp = glGetUniformLocation( _sp, "spl_exp" );
 
-	_uni_lightPos = glGetUniformLocation( _sp, "light_pos_world" );
-	_uni_lightLs = glGetUniformLocation( _sp, "ls" );
-	_uni_lightLd = glGetUniformLocation( _sp, "ld" );
-	_uni_lightLa = glGetUniformLocation( _sp, "la" );
-	_uni_mtlKs = glGetUniformLocation( _sp, "ks" );
-	_uni_mtlKd = glGetUniformLocation( _sp, "kd" );
-	_uni_mtlKa = glGetUniformLocation( _sp, "ka" );
-	_uni_mtlSplExp = glGetUniformLocation( _sp, "spl_exp" );
-
-	assert( _uni_lightPos >= 0 && _uni_lightLs >= 0 && _uni_lightLd >= 0 && _uni_lightLa >= 0 &&
-		_uni_mtlKs >= 0 && _uni_mtlKd >= 0 && _uni_mtlKa >= 0 && _uni_mtlSplExp >= 0 );
+    assert( _uni_lightPos >= 0 && _uni_lightLs >= 0 && _uni_lightLd >= 0 && _uni_lightLa >= 0 &&
+        _uni_mtlKs >= 0 && _uni_mtlKd >= 0 && _uni_mtlKa >= 0 && _uni_mtlSplExp >= 0 );
 
 }
 
@@ -390,7 +459,7 @@ void CPhongShader::initSP( const std::string& t_vs, const std::string& t_fs, con
 // bind phong shader specific content for drawing
 void CPhongShader::BindShaderWithObjectForDrawing( CGeo* t_object, CMaterial* t_material, const mat4& t_trandform ) {
 	assert( _light && t_material );
-	CPerspCamShader::BindShaderWithObjectForDrawing( t_object, t_material, t_trandform );
+	CMVPShader::BindShaderWithObjectForDrawing( t_object, t_material, t_trandform );
 
 	glUniform3fv( _uni_lightPos, 1, glm::value_ptr( _light->GetPos() ) );
 	glUniform3fv( _uni_lightLs, 1, glm::value_ptr( _light->GetLs() ) );
@@ -411,10 +480,11 @@ void CPhongShader::BindShaderWithObjectForDrawing( CGeo* t_object, CMaterial* t_
 
 }
 
-
-
-//////////////////////////////////////////////////////////
+/////////////////////////////////////////////////////////////////
+//
 // normal test shader
+//
+/////////////////////////////////////////////////////////////////
 const std::string NORTEST_SHADER_VS_FILE = "shaders/normal_test.vert";
 const std::string NORTEST_SHADER_FS_FILE = "shaders/normal_test.frag";
 
