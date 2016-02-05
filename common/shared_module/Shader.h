@@ -95,19 +95,20 @@ public:
 	~CMVPShader() = 0;
 
 public:
-	// uniform variable names
-	GLint _uni_viewMatLoc, _uni_projMatLoc, _uni_modelMatLoc;
-
+	// ubo
+	GLuint _MVP_ubo;
 
 protected:
     virtual void onInit();
+	virtual void onDeinit();
 
     /////////////////////////////////////////////////////////////////
     //
-    // init per MVP shader
+    // init and deinit per MVP shader
     //
     /////////////////////////////////////////////////////////////////
     virtual void onInitMVPShader() {}
+	virtual void onDeinitMVPShader() {}
 
 public:
 	void BindShaderWithObjectForDrawing( CGeo* t_object, CMaterial* t_material, const mat4& t_trandform );
@@ -157,7 +158,7 @@ protected:
 	unsigned int _area;
 
     virtual void onInitMVPShader();
-    virtual void onDeinit();
+    virtual void onDeinitMVPShader();
 
 public:
     void BindShaderWithObjectForDrawing( CGeo* t_object, CMaterial* t_material, const mat4& t_trandform );
@@ -205,8 +206,16 @@ public:
 
 protected:
 	// uniform location
-	GLint _uni_lightPos, _uni_lightLs, _uni_lightLd, _uni_lightLa, _uni_mtlKs, _uni_mtlKd, _uni_mtlKa, _uni_mtlSplExp;
 	CLight* _light;
+
+	GLuint _lighting_ubo;
+
+	struct SLIGHTING {
+		vec3 _lightPosInWorld;
+		float _splExp;
+		vec4 _ls, _ld, _la;
+		vec4 _ks, _kd, _ka;
+	};
 
 protected:
     virtual void onInitMVPShader();

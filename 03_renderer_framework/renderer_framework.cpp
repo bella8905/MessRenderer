@@ -141,7 +141,7 @@ void CTestApp::_render() {
 		glViewport( 0, 0, _info._winWidth, _info._winHeight );
 	}
 
-	_scene.DrawScene();
+	_scene.Draw();
 
 }
 

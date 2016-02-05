@@ -531,22 +531,22 @@ int main()
     float scale_xs = 0.1f;
 
     // cube 
-    CObj obj_cube( GEO_UNIT_CUBE );
-    obj_cube.SetupModelMatrix( translate_left, rot_x30, scale_s );
-    obj_cube._shaderType = SD_NORMAL_TEST;
-    g_scene.AddObj( obj_cube );
+//     CObj obj_cube( GEO_UNIT_CUBE );
+//     obj_cube.SetupModelMatrix( translate_left, rot_x30, scale_s );
+//     obj_cube._shaderType = SD_NORMAL_TEST;
+//     g_scene.AddObj( obj_cube );
 
     CObj obj_sphere( GEO_UNIT_SPHERE  );
-    // obj_sphere._material = blinnMat;
-    obj_sphere.SetupModelMatrix( translate_right, rot_noRot, scale_xs );
+    obj_sphere._material = blinnMat;
+    obj_sphere.SetupModelMatrix( translate_center, rot_noRot, scale_s );
     obj_sphere._shaderType = SD_PHONG;
     g_scene.AddObj( obj_sphere );
 
 
-    CObj obj_spider( GEO_TRIANGLE );
-    obj_spider.SetupModelMatrix( translate_center, rot_noRot, scale_s );
-    obj_spider._shaderType = SD_NORMAL_TEST;
-    g_scene.AddObj( obj_spider );
+//     CObj obj_spider( GEO_TRIANGLE );
+//     obj_spider.SetupModelMatrix( translate_center, rot_noRot, scale_s );
+//     obj_spider._shaderType = SD_NORMAL_TEST;
+//     g_scene.AddObj( obj_spider );
     
 
     // init scenes

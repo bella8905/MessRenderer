@@ -1,6 +1,6 @@
 #version 430
 
-layout ( std140, binding = 0 ) uniform AreaBlock {
+layout ( std140, binding = 1 ) uniform AreaBlock {
 	uint _area;
 }area;
 
