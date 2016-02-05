@@ -231,7 +231,9 @@ void CObj::DrawObj() {
 
         glPolygonMode( GL_FRONT_AND_BACK, savedPolygonMode );
     } else {
+		CShaderContainer::GetInstance().GetShader( _shaderType )->PreDraw();
         CGeoContainer::GetInstance().DrawGeo( _geoType, _shaderType, &_material, _modelMat, _selected && _drawBB );
+		CShaderContainer::GetInstance().GetShader( _shaderType )->PostDraw();
     }
 
 

@@ -159,7 +159,7 @@ void _gui_mouseButtonCallback( GLFWwindow* t_window, int t_btn, int t_action, in
         Utl::SRay ray_wor = _getRayFromMouse( (float)xpos, (float)ypos );
 
         g_scene._selectedObjIdx = g_scene.GetRayHitObjIdx( ray_wor );
-        g_scene.UpdateScene();
+        g_scene.Update();
         
         // if we select a different obj, stop rot obj
     }
@@ -610,7 +610,7 @@ int main()
         glViewport( 0, 0, g_winWidth, g_winHeight );
 
 
-        g_scene.DrawScene();
+        g_scene.Draw();
 
         _gui_draw();
 

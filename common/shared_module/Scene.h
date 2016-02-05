@@ -23,6 +23,13 @@ public:
 	void AddObjsFromFile( const std::string t_file );
     void ClearObjs();
 
+	/////////////////////////////////////////////////////////////////
+	//
+	// apply shader to all objects in scene
+	//
+	/////////////////////////////////////////////////////////////////
+	void ApplyShaderToAllObjs( SHADER_TYPE t_shader );
+
 
 
 	void Draw();

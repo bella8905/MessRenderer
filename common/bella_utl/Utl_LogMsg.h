@@ -72,12 +72,14 @@ private:
 
 public:
 	CoutColor GetColor() const {
-#ifdef _WIN32
-		return ( CoutColor )( _convertColorToConsoleColorID( _color ) );
-#else
 		return _color;
-#endif
 	}
+#ifdef _WIN32
+	int GetColorCode() const {
+		return _convertColorToConsoleColorID( _color );
+	}
+#endif
+
 };
 
 class ColorReverter {
@@ -85,7 +87,7 @@ private:
 	ColorReverter() {}
 	~ColorReverter() { if( _instance != 0 ) { delete _instance; _instance = 0; } }
 
-#ifdef _WIN32
+#ifdef _WIN32  
 public:
 	static CONSOLE_SCREEN_BUFFER_INFO _csbi;
 #endif

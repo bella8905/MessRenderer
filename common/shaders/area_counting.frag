@@ -1,7 +1,7 @@
 #version 430
 
-layout ( binding = 0, offset = 0 ) uniform atomic_uint area;
+layout ( binding = 0, offset = 0 ) uniform atomic_uint area_atomic;
 
 void main() {
-    atomicCounterIncrement(area);
+    atomicCounterIncrement(area_atomic);
 }

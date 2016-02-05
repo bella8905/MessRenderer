@@ -42,6 +42,8 @@ protected:
     virtual void onInit() {}
     virtual void onDeinit() {}
 
+	void bindShader();
+
 	// create a shader obj, return the shader obj index
 	std::string glTypeToString( GLenum t_type );
 	void printShaderInfoLog( const GLuint& t_shaderIndex );
@@ -64,8 +66,21 @@ public:
 	// 3: texcoords
 
 public:
-	void BindShader();
 	virtual void BindShaderWithObjectForDrawing( CGeo* t_object, CMaterial* t_material, const mat4& t_trandform ) = 0;
+	/////////////////////////////////////////////////////////////////
+	//
+	// call this before draw calls
+	// if anything need to be processed before draw
+	//
+	/////////////////////////////////////////////////////////////////
+	virtual void PreDraw() {}
+	/////////////////////////////////////////////////////////////////
+	//
+	// call this after draw calls
+	// if anything need to be reverted before draw
+	//
+	/////////////////////////////////////////////////////////////////
+	virtual void PostDraw() {}
 };
 
 /////////////////////////////////////////////////////////////////
@@ -139,12 +154,17 @@ public:
 
 protected:
     GLuint _area_buffer;
+	unsigned int _area;
 
     virtual void onInitMVPShader();
     virtual void onDeinit();
 
 public:
     void BindShaderWithObjectForDrawing( CGeo* t_object, CMaterial* t_material, const mat4& t_trandform );
+	void PreDraw();
+	void PostDraw();
+
+	unsigned int GetArea() { return _area;  }
 };
 
 
@@ -157,16 +177,19 @@ public:
 // this shader should be a subsequence of an AreaCounting shader.
 //
 /////////////////////////////////////////////////////////////////
-class CAreaBasedPaintingShader : public CMVPShader {
+class CAreaPaintingShader : public CMVPShader {
 public:
-    CAreaBasedPaintingShader();
-    ~CAreaBasedPaintingShader() {}
+    CAreaPaintingShader( CAreaCountingShader* t_areaCountingShader );
+    ~CAreaPaintingShader() {}
 
 protected:
     virtual void onInitMVPShader();
+	CAreaCountingShader* _areaCountingShader;
+	GLuint _area_uniform_buffer;
 
 public:
-    // void BindShaderWithObjectForDrawing( CGeo* t_object, CMaterial* t_material, const mat4& t_trandform );
+    void BindShaderWithObjectForDrawing( CGeo* t_object, CMaterial* t_material, const mat4& t_trandform );
+	void PostDraw();
 };
 
 
@@ -214,7 +237,16 @@ public:
 
 // shader container
 // a interface to get all possible shaders we have 
-enum SHADER_TYPE { SD_SINGLE_COLOR, SD_PHONG, SD_NORMAL_TEST, SD_COUNTER };
+enum SHADER_TYPE { 
+	SD_SINGLE_COLOR, 
+	SD_PHONG, 
+	SD_NORMAL_TEST, 
+	SD_AREA_COUNT,
+	SD_AREA_PAINT,
+
+	SD_COUNTER 
+};
+
 class CShaderContainer {
 private:
 	CShaderContainer();
@@ -235,4 +267,5 @@ public:
 	void Deinit();
 
 	void BindShaderForDrawing( SHADER_TYPE t_type, CGeo* t_object, CMaterial* t_material, const mat4& t_transform );
+	CShader* GetShader( SHADER_TYPE t_type );
 };

@@ -42,7 +42,7 @@ static void _initFileOutput();
 std::ostream& operator<<( std::ostream& os, const ColorModifier& mod ) {
 #ifdef _WIN32
 	HANDLE hstdout = GetStdHandle( STD_OUTPUT_HANDLE );
-	SetConsoleTextAttribute( hstdout, mod.GetColor() );
+	SetConsoleTextAttribute( hstdout, mod.GetColorCode() );
 #elif __APPLE__
 	// add something for osx
 

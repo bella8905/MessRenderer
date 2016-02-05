@@ -131,7 +131,6 @@ void CGeo::DrawModel( SHADER_TYPE t_shader, CMaterial* t_material, const mat4& t
 
 		glBindVertexArray( _vao_boundBox );
 
-
 		CShaderContainer::GetInstance().BindShaderForDrawing( SD_SINGLE_COLOR, 0, 0, bbTfmMat );
 		glDrawElements( GL_LINE_LOOP, 4, GL_UNSIGNED_SHORT, NULL );
 		glDrawElements( GL_LINE_LOOP, 4, GL_UNSIGNED_SHORT, ( GLvoid* )( 4 * sizeof( GLushort ) ) );
@@ -141,6 +140,8 @@ void CGeo::DrawModel( SHADER_TYPE t_shader, CMaterial* t_material, const mat4& t
 	}
 
 	CShaderContainer::GetInstance().BindShaderForDrawing( t_shader, this, t_material, t_modelMatrix );
+
+
 }
 
 // primitive
@@ -174,7 +175,6 @@ void CPrimGeo::DrawModel( SHADER_TYPE t_shader, CMaterial* t_material, const mat
 	//     glBindBuffer( GL_ELEMENT_ARRAY_BUFFER, 0 );
 	glBindVertexArray( 0 );
 	//	   glBindBuffer( GL_ARRAY_BUFFER, 0 );
-
 }
 
 void CPrimGeo::genBufferData( const vector<SVertex>& t_vertices, const vector<GLuint>& t_indices ) {

@@ -11,7 +11,7 @@ CScene::~CScene() {
 
 
 void CScene::Draw() {
-	for( us i = 0; i < _objects.size(); ++i ) {
+	for( us i = 0, nObjs = (us)_objects.size(); i < nObjs; ++i ) {
 		_objects[i].DrawObj();
 	}
 }
@@ -26,6 +26,12 @@ void CScene::AddObjsFromFile( const std::string t_file ) {
 
 void CScene::ClearObjs() {
     _objects.clear();
+}
+
+void CScene::ApplyShaderToAllObjs( SHADER_TYPE t_shader ) {
+	for( us i = 0, nObjs = (us)_objects.size(); i < nObjs; ++i ) {
+		_objects[i]._shaderType = t_shader;
+	}
 }
 
 int CScene::GetRayHitObjIdx( const Utl::SRay& t_ray ) {

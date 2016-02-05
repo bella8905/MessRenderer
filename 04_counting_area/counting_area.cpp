@@ -8,15 +8,6 @@
 /////////////////////////////////////////////////////////////////
 
 
-/////////////////////////////////////////////////////////////////
-//
-//  renderer framework - main
-//
-//
-//  Copyright (c) 2016 Bella Q
-//  
-/////////////////////////////////////////////////////////////////
-
 #include "Camera.h"
 #include "Shader.h"
 #include "Geometry.h"
@@ -110,7 +101,7 @@ void CRenderer::_setupScene() {
     CObj obj_sphere( GEO_UNIT_SPHERE );
     // obj_sphere._material = blinnMat;
     obj_sphere.SetupModelMatrix( translate_center, rot_noRot, scale_xs );
-    obj_sphere._shaderType = SD_SINGLE_COLOR;
+    // obj_sphere._shaderType = SD_SINGLE_COLOR;
     _scene.AddObj( obj_sphere );
 
 
@@ -122,7 +113,7 @@ void CRenderer::_startup() {
     _setupScene();
 
     glEnable( GL_DEPTH_TEST );
-    glDepthFunc( GL_LESS );
+    glDepthFunc( GL_LEQUAL );
 
     glCullFace( GL_BACK );
     glFrontFace( GL_CCW );
@@ -143,8 +134,13 @@ void CRenderer::_render() {
     }
 
 
-
+	// count area
+	_scene.ApplyShaderToAllObjs( SD_AREA_COUNT );
     _scene.Draw();
+
+	// paint area
+	_scene.ApplyShaderToAllObjs( SD_AREA_PAINT );
+	_scene.Draw();
 
 }
 

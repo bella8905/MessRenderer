@@ -71,10 +71,15 @@ void CShader::printShaderInfoLog( const GLuint& t_shaderIndex ) {
     GLint logLength;
     glGetShaderiv( t_shaderIndex, GL_INFO_LOG_LENGTH, &logLength );
     std::string str;
-    str.reserve( logLength );
-    glGetShaderInfoLog( t_shaderIndex, logLength, NULL, const_cast<GLchar*>( str.c_str() ) );
+	// don't use reserve,
+	// we need the actual array to be logLength long
+    str.resize( logLength );
+	// don't user str.c_str()
+	// this returns a const char* which we can't change the content it's pointing to.
+	// even we can const_cast it, we'd better not do thing out of boundary...
+    glGetShaderInfoLog( t_shaderIndex, logLength, NULL, &str[0] );
 
-	LogMsg << "shader info log for GL index " << t_shaderIndex << LogEndl << str << LogEndl << LogEndl;
+	LogError << "shader info log for GL index " << t_shaderIndex << LogEndl << str << LogEndl << LogEndl;
 }
 
 // print errors in shader linking
@@ -82,9 +87,9 @@ void CShader::printSPInfoLog( const GLuint& t_spIndex ) {
     GLint logLength;
     glGetProgramiv( t_spIndex, GL_INFO_LOG_LENGTH, &logLength );
     std::string str;
-    str.reserve( logLength );
-	glGetProgramInfoLog( t_spIndex, logLength, NULL, const_cast<GLchar*>( str.c_str() )  );
-	LogMsg << "program info log for GL index " << t_spIndex << LogEndl << str << LogEndl << LogEndl;
+    str.resize( logLength );
+	glGetProgramInfoLog( t_spIndex, logLength, NULL, &str[0]  );
+	LogError << "program info log for GL index " << t_spIndex << LogEndl << str << LogEndl << LogEndl;
 }
 
 
@@ -234,7 +239,7 @@ GLuint CShader::createShaderProgram( const GLint& t_vs, const GLint& t_gs, const
 	}
 
     // print sp info
-    printSPInfo( sp );
+    // printSPInfo( sp );
 
 	return sp;
 }
@@ -267,7 +272,7 @@ void CShader::createShaderProgram() {
 }
 
 // tell everyone we are going to use the shader
-void CShader::BindShader() {
+void CShader::bindShader() {
 	if( !_spCreated ) {
 		LogError << "shader not inited" << LogEndl;
 		return;
@@ -325,7 +330,7 @@ void CMVPShader::BindShaderWithObjectForDrawing( CGeo* t_object, CMaterial* t_ma
 	CView* view = View_GetActive();
 	assert( view );
 
-	CShader::BindShader();
+	CShader::bindShader();
 
 	mat4 modelMat = ( t_object ) ? ( t_trandform * ( t_object->GetPreProcessedModelMat() ) ) : t_trandform;
 	glUniformMatrix4fv( _uni_viewMatLoc, 1, GL_FALSE, glm::value_ptr( view->GetWorld2ViewMatrix() ) );
@@ -371,35 +376,61 @@ const std::string AREA_COUNTING_SHADER_VS_FILE = "shaders/simple_lookAtCam.vert"
 const std::string AREA_COUNTING_SHADER_FS_FILE = "shaders/area_counting.frag";
 
 
-CAreaCountingShader::CAreaCountingShader()  {
+CAreaCountingShader::CAreaCountingShader() : _area( 0 ) {
     initSP( AREA_COUNTING_SHADER_VS_FILE, AREA_COUNTING_SHADER_FS_FILE );
 }
 
 
 void CAreaCountingShader::onInitMVPShader() {
-    glGenBuffers( 1, &_area_buffer );
-    glBindBuffer( GL_ATOMIC_COUNTER_BUFFER, _area_buffer );
-    glBufferData( GL_ATOMIC_COUNTER_BUFFER, sizeof( GLuint ), NULL, GL_DYNAMIC_COPY );
-    glBindBufferBase( GL_ATOMIC_COUNTER_BUFFER, 0, _area_buffer );
-
-    // reset data
-    GLuint* counter = (GLuint*) glMapBufferRange( GL_ATOMIC_COUNTER_BUFFER, 0, sizeof( GLuint ), GL_MAP_WRITE_BIT | GL_MAP_INVALIDATE_RANGE_BIT );
-    *counter = 0;
-
-    // clear binding 
-    glBindBuffer( GL_ATOMIC_COUNTER_BUFFER, 0 );
-    glBindBufferBase( GL_ATOMIC_COUNTER_BUFFER, 0, 0 );
-}
+	glGenBuffers( 1, &_area_buffer );
+	glBindBuffer( GL_ATOMIC_COUNTER_BUFFER, _area_buffer );
+	glBufferData( GL_ATOMIC_COUNTER_BUFFER, sizeof( GLuint ), NULL, GL_DYNAMIC_DRAW );
+	glBindBuffer( GL_ATOMIC_COUNTER_BUFFER, 0 );
+};
 
 void CAreaCountingShader::onDeinit() {
-    glDeleteBuffers( &_area_buffer );
+    glDeleteBuffers( 1, &_area_buffer );
 }
 
 
 void CAreaCountingShader::BindShaderWithObjectForDrawing( CGeo* t_object, CMaterial* t_material, const mat4& t_trandform ) {
     CMVPShader::BindShaderWithObjectForDrawing( t_object, t_material, t_trandform );
     // use the buffer
-    glBindBufferBase( GL_ATOMIC_COUNTER_BUFFER, 0, _area_buffer );
+	// reset data
+	glBindBufferBase( GL_ATOMIC_COUNTER_BUFFER, 0, _area_buffer );
+
+
+	glBindBuffer( GL_ATOMIC_COUNTER_BUFFER, _area_buffer );
+	GLuint* counter = ( GLuint* )glMapBufferRange( GL_ATOMIC_COUNTER_BUFFER, 0, sizeof( GLuint ), GL_MAP_WRITE_BIT | GL_MAP_INVALIDATE_BUFFER_BIT | GL_MAP_UNSYNCHRONIZED_BIT );
+	counter[0] = 0;
+	glUnmapBuffer( GL_ATOMIC_COUNTER_BUFFER );
+	glBindBuffer( GL_ATOMIC_COUNTER_BUFFER, 0 );
+
+
+}
+
+void CAreaCountingShader::PreDraw() {
+	// also disable depth writing
+	// if we set depth func to LESS
+	// depth value written later won't overwrite the first one ( which we actually don't draw on screen )
+	glColorMask( GL_FALSE, GL_FALSE, GL_FALSE, GL_FALSE );
+	glDepthMask( GL_FALSE );
+}
+
+void CAreaCountingShader::PostDraw() {
+	glColorMask( GL_TRUE, GL_TRUE, GL_TRUE, GL_TRUE );
+	glDepthMask( GL_TRUE );
+
+	glMemoryBarrier( GL_ATOMIC_COUNTER_BARRIER_BIT );
+	// read back
+	glBindBuffer( GL_ATOMIC_COUNTER_BUFFER, _area_buffer );
+	GLuint* area = ( GLuint* )glMapBufferRange( GL_ATOMIC_COUNTER_BUFFER, 0, sizeof( GLuint ), GL_MAP_READ_BIT );
+
+	_area = area[0];
+	glUnmapBuffer( GL_ATOMIC_COUNTER_BUFFER );
+	glBindBuffer( GL_ATOMIC_COUNTER_BUFFER, 0 );
+
+	glBindBufferBase( GL_ATOMIC_COUNTER_BUFFER, 0, 0 );
 }
 
 
@@ -408,18 +439,40 @@ void CAreaCountingShader::BindShaderWithObjectForDrawing( CGeo* t_object, CMater
 // area based painting shader
 //
 /////////////////////////////////////////////////////////////////
-const std::string AREA_BASED_PAINTING_SHADER_VS_FILE = "shaders/simple_lookAtCam.vert";
-const std::string AREA_BASED_PAINTING_SHADER_FS_FILE = "shaders/simple.frag";
+const std::string AREA_PAINTING_SHADER_VS_FILE = "shaders/simple_lookAtCam.vert";
+const std::string AREA_PAINTING_SHADER_FS_FILE = "shaders/area_painting.frag";
 
 
-CAreaBasedPaintingShader::CAreaBasedPaintingShader()  {
-    initSP( AREA_BASED_PAINTING_SHADER_VS_FILE, AREA_BASED_PAINTING_SHADER_VS_FILE );
+CAreaPaintingShader::CAreaPaintingShader( CAreaCountingShader* t_areaCountingShader ) : _areaCountingShader( t_areaCountingShader )  {
+    initSP( AREA_PAINTING_SHADER_VS_FILE, AREA_PAINTING_SHADER_FS_FILE );
 }
 
 
 
-void CAreaBasedPaintingShader::onInitMVPShader() {
+void CAreaPaintingShader::onInitMVPShader() {
+	glGenBuffers( 1, &_area_uniform_buffer );
+	glBindBuffer( GL_UNIFORM_BUFFER, _area_uniform_buffer );
+	glBufferData( GL_UNIFORM_BUFFER, sizeof( unsigned int ), NULL, GL_DYNAMIC_DRAW );
+	glBindBuffer( GL_UNIFORM_BUFFER, 0 );
+}
 
+void CAreaPaintingShader::BindShaderWithObjectForDrawing( CGeo* t_object, CMaterial* t_material, const mat4& t_trandform ) {
+	CMVPShader::BindShaderWithObjectForDrawing( t_object, t_material, t_trandform );
+	
+	if( _areaCountingShader ) {
+		glBindBufferBase( GL_UNIFORM_BUFFER, 0, _area_uniform_buffer );
+
+		unsigned int area = _areaCountingShader->GetArea();
+		// bind buffer
+		glBindBuffer( GL_UNIFORM_BUFFER, _area_uniform_buffer );
+		glBufferSubData( GL_UNIFORM_BUFFER, 0, sizeof( unsigned int ), &area );
+
+	}
+
+}
+
+void CAreaPaintingShader::PostDraw() {
+	glBindBufferBase( GL_UNIFORM_BUFFER, 0, 0 );
 }
 
 
@@ -494,8 +547,12 @@ CTestNormalShader::CTestNormalShader() {
 }
 
 
-/////////////////////////////////////////
+/////////////////////////////////////////////////////////////////
+//
 // shader container
+//
+/////////////////////////////////////////////////////////////////
+
 CShaderContainer::CShaderContainer() {
 	for( us i = 0; i < SD_COUNTER; ++i ) {
 		_shaders[i] = 0;
@@ -518,6 +575,13 @@ void CShaderContainer::Init() {
 
 	CTestNormalShader* normaltest = new CTestNormalShader();
 	_shaders[SD_NORMAL_TEST] = normaltest;
+
+	CAreaCountingShader* areaCount = new CAreaCountingShader();
+	_shaders[SD_AREA_COUNT] = areaCount;
+
+	CAreaPaintingShader* areaPaint = new CAreaPaintingShader( areaCount );
+	_shaders[SD_AREA_PAINT] = areaPaint;
+ 
 
 	_inited = true;
 }
@@ -552,4 +616,11 @@ void CShaderContainer::BindShaderForDrawing( SHADER_TYPE t_type, CGeo* t_object,
 	}
 
 	_shaders[t_type]->BindShaderWithObjectForDrawing( t_object, t_material, t_transform );
+}
+
+CShader* CShaderContainer::GetShader( SHADER_TYPE t_type ) {
+	if( !_inited ) return 0;
+	if( t_type < 0 || t_type >= SD_COUNTER ) return 0;
+
+	return _shaders[t_type];
 }
