@@ -1,7 +1,13 @@
 /////////////////////////////////////////////////////////////////
 //
-//  distance based brightness - main
+//  area counting and painting - main
 //
+//  count number of fragments covered by scene,
+//  and use the counter to decide the brightness of objects in scene.
+//  this could give an effect of distance based rendering.
+//
+//  objects further away cover less area, offering a darker scene.
+//  objects closer to camera cover more area, offering a brighter scene.
 //
 //  Copyright (c) 2016 Bella Q
 //  
@@ -24,7 +30,7 @@
 
 class CRenderer : public MessRenderer::CApp {
 public:
-    CRenderer() : MessRenderer::CApp( "Distance based brightness" ) {}
+    CRenderer() : MessRenderer::CApp( "Distance based painting" ) {}
     ~CRenderer() {}
 
 protected:
