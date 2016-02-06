@@ -383,6 +383,21 @@ void CSingleColorShader::BindShaderWithObjectForDrawing( CGeo* t_object, CMateri
 
 /////////////////////////////////////////////////////////////////
 //
+// point size attenuation shader
+//
+/////////////////////////////////////////////////////////////////
+const std::string POINT_SIZE_ATTENUATION_SHADER_VS_FILE = "shaders/point_size_attenuation.vert";
+const std::string POINT_SIZE_ATTENUATION_SHADER_FS_FILE = "shaders/simple.frag";
+
+
+CPointSizeAttenuationShader::CPointSizeAttenuationShader() {
+    initSP( POINT_SIZE_ATTENUATION_SHADER_VS_FILE, POINT_SIZE_ATTENUATION_SHADER_FS_FILE );
+}
+
+
+
+/////////////////////////////////////////////////////////////////
+//
 // area counting shader
 //
 /////////////////////////////////////////////////////////////////
@@ -594,6 +609,8 @@ void CShaderContainer::Init() {
 	CAreaPaintingShader* areaPaint = new CAreaPaintingShader( areaCount );
 	_shaders[SD_AREA_PAINT] = areaPaint;
  
+    CPointSizeAttenuationShader* pointAttenuation = new CPointSizeAttenuationShader();
+    _shaders[SD_POINT_ATTENUATION] = pointAttenuation;
 
 	_inited = true;
 }

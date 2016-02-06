@@ -92,7 +92,7 @@ public:
 class CMVPShader : public CShader {
 public:
 	CMVPShader();
-	~CMVPShader() = 0;
+	virtual ~CMVPShader() = 0;
 
 public:
 	// ubo
@@ -123,7 +123,7 @@ public:
 class CSingleColorShader : public CMVPShader {
 public:
 	CSingleColorShader();
-	~CSingleColorShader() {}
+	virtual ~CSingleColorShader() {}
 
 public:
     GLint _uni_inputColorLoc;
@@ -136,6 +136,22 @@ public:
     void BindShaderWithObjectForDrawing( CGeo* t_object, CMaterial* t_material, const mat4& t_trandform );
 };
 
+
+
+/////////////////////////////////////////////////////////////////
+//
+// a single color shader which paint points with size
+// based on the distance to camera
+//
+/////////////////////////////////////////////////////////////////
+class CPointSizeAttenuationShader : public CMVPShader {
+public:
+    CPointSizeAttenuationShader();
+    ~CPointSizeAttenuationShader() {}
+
+protected:
+
+};
 
 
 /////////////////////////////////////////////////////////////////
@@ -252,6 +268,7 @@ enum SHADER_TYPE {
 	SD_NORMAL_TEST, 
 	SD_AREA_COUNT,
 	SD_AREA_PAINT,
+    SD_POINT_ATTENUATION,
 
 	SD_COUNTER 
 };
