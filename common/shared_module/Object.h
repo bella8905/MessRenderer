@@ -60,6 +60,7 @@ public:
 	static bool _drawBB;
     static bool _drawWireframe;
 	static bool _drawAcball;
+    static bool _drawBones;
     
 
 protected:

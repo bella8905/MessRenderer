@@ -103,7 +103,7 @@ void CRenderer::_setupScene() {
     CObj obj_cube( GEO_UNIT_CUBE );
     obj_cube.SetupModelMatrix( translate_center, rot_y30 * rot_x30, scale_s );
     _scene.AddObj( obj_cube );
-
+    _scene.ApplyShaderToAllObjs( SD_NORMAL_TEST );
 
 }
 
@@ -121,6 +121,7 @@ void CRenderer::_startup() {
     CObj::_drawAcball = false;
     CObj::_drawBB = false;
     CObj::_drawWireframe = false;
+    CObj::_drawBones = true;
 
     glEnable( GL_PROGRAM_POINT_SIZE );
 }
@@ -137,20 +138,8 @@ void CRenderer::_render() {
         glViewport( 0, 0, _info._winWidth, _info._winHeight );
     }
 
-    // wireframe
-    _scene.ApplyShaderToAllObjs( SD_SINGLE_COLOR );
-    GLint savedPolygonMode;
-    glGetIntegerv( GL_POLYGON_MODE, &savedPolygonMode );
-//     glPolygonMode( GL_FRONT_AND_BACK, GL_LINE );
-//     _scene.Draw();
-
-
-    // distance based point size
-    _scene.ApplyShaderToAllObjs( SD_POINT_ATTENUATION );
-    glPolygonMode( GL_FRONT_AND_BACK, GL_POINT );
     _scene.Draw();
 
-    glPolygonMode( GL_FRONT_AND_BACK, savedPolygonMode );
 }
 
 void CRenderer::_shutdown() {

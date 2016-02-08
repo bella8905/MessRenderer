@@ -5,6 +5,7 @@
 bool CObj::_drawBB = true;
 bool CObj::_drawAcball = true;
 bool CObj::_drawWireframe = false;
+bool CObj::_drawBones = false;
 
 float SArcball::_radius = 0.8f;
 GLuint SArcball::_vao = 0;
@@ -230,6 +231,20 @@ void CObj::DrawObj() {
         CGeoContainer::GetInstance().DrawGeo( _geoType, SD_SINGLE_COLOR, &_material, _modelMat, _selected && _drawBB );
 
         glPolygonMode( GL_FRONT_AND_BACK, savedPolygonMode );
+    } else if ( _drawBones ) {
+
+        GLint savedPolygonMode;
+        glGetIntegerv( GL_POLYGON_MODE, &savedPolygonMode );
+        
+        // wireframe
+        glPolygonMode( GL_FRONT_AND_BACK, GL_LINE );
+        CGeoContainer::GetInstance().DrawGeo( _geoType, SD_SINGLE_COLOR, &_material, _modelMat, _selected && _drawBB );
+
+        // points
+        glPolygonMode( GL_FRONT_AND_BACK, GL_POINT );
+        CGeoContainer::GetInstance().DrawGeo( _geoType, SD_POINT_ATTENUATION, &_material, _modelMat, _selected && _drawBB );
+        glPolygonMode( GL_FRONT_AND_BACK, savedPolygonMode );
+
     } else {
 		CShaderContainer::GetInstance().GetShader( _shaderType )->PreDraw();
         CGeoContainer::GetInstance().DrawGeo( _geoType, _shaderType, &_material, _modelMat, _selected && _drawBB );
