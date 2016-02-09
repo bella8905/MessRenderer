@@ -9,10 +9,14 @@
 /////////////////////////////////////////////////////////////////
 
 #include "Utl_Include.h"
+#include "stb_image/stb_image.h"
+#include "stb_image/stb_image_write.h"
 
 #include "MessRendererApp.h"
 
 namespace MessRenderer {
+
+	const string g_imageFilePrefix = "images/screenshot_";
 
 	CApp* CApp::_activeApp = 0;
 
@@ -248,6 +252,32 @@ namespace MessRenderer {
 		glfwSetScrollCallback( _window, CApp::_glfw_onMouseScroll );
 	}
 
+
+
+	void CApp::_screenPrint() {
+		string time = Utl::GetTime( Utl::TIME_STAMP_FILE_NAME );
+		string imagefile = g_imageFilePrefix + time + ".png";
+
+		ul size = _info._winWidth * _info._winHeight * 3;
+
+		// dynamic memory is fine, cause we may change the viewport size
+		// or better, we can pre allocate a large enough memory 
+		// for video capture, we'd better do memory allocation first
+		unsigned char* buffer = new unsigned char[size];
+		glReadPixels( 0, 0, _info._winWidth, _info._winHeight, GL_RGB, GL_UNSIGNED_BYTE, buffer );
+		unsigned char* lastRow = buffer + ( _info._winWidth * 3 * ( _info._winHeight - 1 ) );
+		if( !stbi_write_png( imagefile.c_str(), _info._winWidth, _info._winHeight, 3, lastRow, -3 * _info._winWidth ) ) {
+			LogError << "can't write to image: " << imagefile << LogEndl;
+			// also the error msg
+			LogError << strerror( errno ) << LogEndl;
+		} else {
+			LogPass << "image saved: " << imagefile << LogEndl;
+		}
+
+		delete[] buffer;
+
+	}
+
 	void CApp::Run() {
 
 		if( _isActive() ) {
@@ -297,8 +327,15 @@ namespace MessRenderer {
 			glfwSwapBuffers( _window );
 
 			glfwPollEvents();
+
+			// exit
 			if( GLFW_PRESS == glfwGetKey( _window, GLFW_KEY_ESCAPE ) ) {
 				glfwSetWindowShouldClose( _window, 1 );
+			}
+			
+			// screen print
+			if( GLFW_PRESS == glfwGetKey( _window, GLFW_KEY_F11 ) ) {
+				_screenPrint();
 			}
 
 

@@ -110,6 +110,13 @@ namespace MessRenderer {
 		void _glfw_registerCallbacks();
 		bool _glfw_createWindow();
 
+		/////////////////////////////////////////////////////////////////
+		//
+		//  features
+		//  
+		/////////////////////////////////////////////////////////////////
+		void _screenPrint();
+
 	public:
 		void Run();
 	};

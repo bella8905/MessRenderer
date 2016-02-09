@@ -16,7 +16,6 @@
 #include "Light.h"
 #include "Scene.h"
 #include "View.h"
-#include "stb_image/stb_image_write.h"
 #include "assimp/scene.h"
 #include "glm/gtx/transform.hpp"
 
