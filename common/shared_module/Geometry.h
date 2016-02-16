@@ -166,7 +166,8 @@ protected:
 
 public:
 	// draw an instance of the object using a model matrix
-	virtual void DrawModel( SHADER_TYPE t_shader, CMaterial* t_material, const mat4& t_modelMatrix, bool t_drawBB );
+	virtual void DrawModel( CShader* t_shader, CMaterial* t_material, const mat4& t_modelMatrix, bool t_drawBB );
+	virtual void DrawModel( const SHADER_TYPE& t_shader, CMaterial* t_material, const mat4& t_modelMatrix, bool t_drawBB );
 	bool IsInited() { return _inited; }
 
 	const mat4& GetPreProcessedModelMat() { return _preprocessModelMatrix; }
@@ -223,7 +224,7 @@ protected:
 	void genBufferData( const vector<SVertex>& t_vertices, const vector<GLuint>& t_indices );
 
 public:
-	virtual void DrawModel( SHADER_TYPE t_shader, CMaterial* t_material, const mat4& t_modelMatrix, bool t_drawBB );
+	virtual void DrawModel( CShader* t_shader, CMaterial* t_material, const mat4& t_modelMatrix, bool t_drawBB );
 };
 
 
@@ -300,14 +301,14 @@ protected:
 	void deinitModel();
 
 public:
-	virtual void DrawModel( SHADER_TYPE t_shader, CMaterial* t_material, const mat4& t_modelMatrix, bool t_drawBB );
+	virtual void DrawModel( CShader* t_shader, CMaterial* t_material, const mat4& t_modelMatrix, bool t_drawBB );
 };
 
 
 // sphere
 class CSphereGeo : public CModelGeo {
 public:
-	CSphereGeo( bool t_unified = false ) : CModelGeo( "../models/sphere.dae", t_unified ) {}
+	CSphereGeo( bool t_unified = false ) : CModelGeo( "../../common/models/sphere.dae", t_unified ) {}
 	~CSphereGeo() {}
 };
 
@@ -315,7 +316,7 @@ public:
 // spider
 class CSpiderGeo : public CModelGeo {
 public:
-	CSpiderGeo( bool t_unified = false ) : CModelGeo( "../models/spider/spider.obj", t_unified ) {}
+	CSpiderGeo( bool t_unified = false ) : CModelGeo( "../../common/models/spider/spider.obj", t_unified ) {}
 	~CSpiderGeo() {}
 };
 
@@ -325,7 +326,6 @@ class CGeoContainer {
 private:
 	CGeoContainer();
 	CGeoContainer( const CGeoContainer& t_cont );
-	void operator=( const CGeoContainer& t_cont );
 
 private:
 	CGeo* _geos[GEO_COUNTER];
@@ -341,5 +341,6 @@ public:
 	void Deinit();
 
 	SBoundBox* GetGeoBB( const GEO_TYPE& t_geoType );
-	void DrawGeo( const GEO_TYPE& t_geoType, const SHADER_TYPE& t_shaderType, CMaterial* t_material, const mat4& t_modelMatrix, const bool& t_drawBB );
+	void DrawGeo( const GEO_TYPE& t_geoType, CShader* t_shader, CMaterial* t_material, const mat4& t_modelMatrix, const bool& t_drawBB );
+	void DrawGeo( const GEO_TYPE& t_geoType, const SHADER_TYPE& t_shader, CMaterial* t_material, const mat4& t_modelMatrix, const bool& t_drawBB );
 };

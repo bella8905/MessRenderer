@@ -58,6 +58,7 @@ build
 vs_projects
 common/libs
 common/include
+common/models
 MessRenderer.VC.opendb
 projects
 Debug

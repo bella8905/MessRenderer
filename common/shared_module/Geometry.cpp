@@ -104,9 +104,15 @@ void CGeo::deinitModel() {
 	if( !_inited )  return;
 }
 
-void CGeo::DrawModel( SHADER_TYPE t_shader, CMaterial* t_material, const mat4& t_modelMatrix, bool t_drawBB ) {
+
+void CGeo::DrawModel( CShader* t_shader, CMaterial* t_material, const mat4& t_modelMatrix, bool t_drawBB ) {
 	if( !_inited ) {
 		LogError << "model not inited" << LogEndl;
+		return;
+	}
+
+	if( !t_shader ) {
+		LogError << "shader not assigned" << LogEndl;
 		return;
 	}
 
@@ -117,14 +123,14 @@ void CGeo::DrawModel( SHADER_TYPE t_shader, CMaterial* t_material, const mat4& t
 		// but we need to recalcuate the bound box model matrix
 		// scale and then translate the unit box to transform it to bb
 		mat4 scaleMat = mat4( vec4( _boundBox._sideLentghs[0], 0.f, 0.f, 0.f ),
-			vec4( 0.f, _boundBox._sideLentghs[1], 0.f, 0.f ),
-			vec4( 0.f, 0.f, _boundBox._sideLentghs[2], 0.f ),
-			vec4( 0.f, 0.f, 0.f, 1.f ) );
+							  vec4( 0.f, _boundBox._sideLentghs[1], 0.f, 0.f ),
+							  vec4( 0.f, 0.f, _boundBox._sideLentghs[2], 0.f ),
+							  vec4( 0.f, 0.f, 0.f, 1.f ) );
 
 		mat4 translateMat = mat4( vec4( 1.f, 0.f, 0.f, 0.f ),
-			vec4( 0.f, 1.f, 0.f, 0.f ),
-			vec4( 0.f, 0.f, 1.f, 0.f ),
-			vec4( _boundBox._center, 1.f ) );
+								  vec4( 0.f, 1.f, 0.f, 0.f ),
+								  vec4( 0.f, 0.f, 1.f, 0.f ),
+								  vec4( _boundBox._center, 1.f ) );
 
 		mat4 bbTfmMat( 1.f );
 		bbTfmMat = t_modelMatrix * translateMat * scaleMat;
@@ -139,10 +145,15 @@ void CGeo::DrawModel( SHADER_TYPE t_shader, CMaterial* t_material, const mat4& t
 		glBindVertexArray( 0 );
 	}
 
-	CShaderContainer::GetInstance().BindShaderForDrawing( t_shader, this, t_material, t_modelMatrix );
-
+	t_shader->BindShaderWithObjectForDrawing( this, t_material, t_modelMatrix );
 
 }
+
+void CGeo::DrawModel( const SHADER_TYPE& t_shader, CMaterial* t_material, const mat4& t_modelMatrix, bool t_drawBB ) {
+	CShader* shader = CShaderContainer::GetInstance().GetShader( t_shader );
+	DrawModel( shader, t_material, t_modelMatrix, t_drawBB );
+}
+
 
 // primitive
 bool CPrimGeo::initModel() {
@@ -157,8 +168,7 @@ void CPrimGeo::deinitModel() {
 	CGeo::deinitModel();
 }
 
-void CPrimGeo::DrawModel( SHADER_TYPE t_shader, CMaterial* t_material, const mat4& t_modelMatrix, bool t_drawBB ) {
-
+void CPrimGeo::DrawModel( CShader* t_shader, CMaterial* t_material, const mat4& t_modelMatrix, bool t_drawBB ) {
 	CGeo::DrawModel( t_shader, t_material, t_modelMatrix, t_drawBB );
 
 	glBindVertexArray( _vao );
@@ -176,6 +186,7 @@ void CPrimGeo::DrawModel( SHADER_TYPE t_shader, CMaterial* t_material, const mat
 	glBindVertexArray( 0 );
 	//	   glBindBuffer( GL_ARRAY_BUFFER, 0 );
 }
+
 
 void CPrimGeo::genBufferData( const vector<SVertex>& t_vertices, const vector<GLuint>& t_indices ) {
 
@@ -595,7 +606,7 @@ void CModelGeo::deinitModel() {
 	_inited = false;
 }
 
-void CModelGeo::DrawModel( SHADER_TYPE t_shader, CMaterial* t_material, const mat4& t_modelMatrix, bool t_drawBB ) {
+void CModelGeo::DrawModel( CShader* t_shader, CMaterial* t_material, const mat4& t_modelMatrix, bool t_drawBB ) {
 
 	CGeo::DrawModel( t_shader, t_material, t_modelMatrix, t_drawBB );
 
@@ -665,7 +676,7 @@ SBoundBox* CGeoContainer::GetGeoBB( const GEO_TYPE& t_geoType ) {
 	return &( _geos[t_geoType]->GetBB() );
 }
 
-void CGeoContainer::DrawGeo( const GEO_TYPE& t_geoType, const SHADER_TYPE& t_shaderType, CMaterial* t_material, const mat4& t_modelMatrix, const bool& t_drawBB ) {
+void CGeoContainer::DrawGeo( const GEO_TYPE& t_geoType, CShader* t_shader, CMaterial* t_material, const mat4& t_modelMatrix, const bool& t_drawBB ) {
 	if( !_inited ) {
 		LogError << "geo container not inited" << LogEndl;
 		return;
@@ -676,5 +687,10 @@ void CGeoContainer::DrawGeo( const GEO_TYPE& t_geoType, const SHADER_TYPE& t_sha
 		return;
 	}
 
-	_geos[t_geoType]->DrawModel( t_shaderType, t_material, t_modelMatrix, t_drawBB );
+	_geos[t_geoType]->DrawModel( t_shader, t_material, t_modelMatrix, t_drawBB );
+}
+
+void CGeoContainer::DrawGeo( const GEO_TYPE& t_geoType, const SHADER_TYPE& t_shader, CMaterial* t_material, const mat4& t_modelMatrix, const bool& t_drawBB ) {
+	CShader* shader = CShaderContainer::GetInstance().GetShader( t_shader );
+	DrawGeo( t_geoType, shader, t_material, t_modelMatrix, t_drawBB );
 }

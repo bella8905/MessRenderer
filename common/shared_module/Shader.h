@@ -277,7 +277,6 @@ class CShaderContainer {
 private:
 	CShaderContainer();
 	CShaderContainer( const CShaderContainer& t_cont );
-	void operator=( const CShaderContainer& t_cont );
 
 private:
 	CShader* _shaders[SD_COUNTER];

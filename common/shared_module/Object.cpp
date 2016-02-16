@@ -158,7 +158,7 @@ void SArcball::DrawArcball() {
 	}
 }
 
-CObj::CObj( GEO_TYPE t_type ) : _geoType( t_type ), _material( g_defaultMat ), _modelMat( mat4() ), _invModelMat( mat4() ), _translate( 0.f ), _rot( 1.f ), _scale( 1.f ), _shaderType( SD_SINGLE_COLOR ), _selected( false ) {
+CObj::CObj( GEO_TYPE t_type ) : _geoType( t_type ), _material( g_defaultMat ), _modelMat( mat4() ), _invModelMat( mat4() ), _translate( 0.f ), _rot( 1.f ), _scale( 1.f ), _shader( 0 ), _selected( false ) {
 }
 
 
@@ -222,7 +222,7 @@ void CObj::DrawObj() {
         static float line_offset_unit = 0.f;
         glPolygonOffset( line_offset_slope, line_offset_unit );
 
-        CGeoContainer::GetInstance().DrawGeo( _geoType, _shaderType, &_material, _modelMat, _selected && _drawBB );
+		CGeoContainer::GetInstance().DrawGeo( _geoType, _shader, &_material, _modelMat, _selected && _drawBB );
 
         glDisable( GL_POLYGON_OFFSET_FILL );
 
@@ -245,10 +245,10 @@ void CObj::DrawObj() {
         CGeoContainer::GetInstance().DrawGeo( _geoType, SD_POINT_ATTENUATION, &_material, _modelMat, _selected && _drawBB );
         glPolygonMode( GL_FRONT_AND_BACK, savedPolygonMode );
 
-    } else {
-		CShaderContainer::GetInstance().GetShader( _shaderType )->PreDraw();
-        CGeoContainer::GetInstance().DrawGeo( _geoType, _shaderType, &_material, _modelMat, _selected && _drawBB );
-		CShaderContainer::GetInstance().GetShader( _shaderType )->PostDraw();
+    } else if( _shader ){
+		_shader->PreDraw();
+        CGeoContainer::GetInstance().DrawGeo( _geoType, _shader, &_material, _modelMat, _selected && _drawBB );
+		_shader->PostDraw();
     }
 
 
@@ -345,4 +345,13 @@ void CObj::RayIntersectTestWithArcball( const Utl::SRay& t_ray, const bool& t_is
 		_rot = rot_quat * _rot;
 		resetModelMatrix();
 	}
+}
+
+
+void CObj::SetShader( const SHADER_TYPE& t_shader ) {
+	_shader = CShaderContainer::GetInstance().GetShader( t_shader );
+}
+
+void CObj::SetShader( CShader* t_shader ) {
+	_shader = t_shader;
 }

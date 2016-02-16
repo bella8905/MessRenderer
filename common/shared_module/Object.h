@@ -51,10 +51,7 @@ public:
 	virtual ~CObj();
 
 public:
-	GEO_TYPE _geoType;
-	CMaterial _material;
-	// CShader* _shader;
-	SHADER_TYPE _shaderType;
+	// SHADER_TYPE _shaderType;
 
 	bool _selected;
 	static bool _drawBB;
@@ -64,6 +61,9 @@ public:
     
 
 protected:
+	GEO_TYPE _geoType;
+	CMaterial _material;
+	CShader* _shader;
 
 	// don't set the model matrix and inverse model matrix directly
 	vec3 _translate;
@@ -103,6 +103,9 @@ public:
 		_rot = t_rot;
 		resetModelMatrix();
 	}
+
+	void SetShader( const SHADER_TYPE& t_shader );
+	void SetShader( CShader* t_shader ); 
 
 	// test if bb is hit by ray, and return the dist from ray origin to hit point
 	float RayIntersectTestWithBB( const Utl::SRay& t_ray );

@@ -30,7 +30,7 @@ void CScene::ClearObjs() {
 
 void CScene::ApplyShaderToAllObjs( SHADER_TYPE t_shader ) {
 	for( us i = 0, nObjs = (us)_objects.size(); i < nObjs; ++i ) {
-		_objects[i]._shaderType = t_shader;
+		_objects[i].SetShader( t_shader );
 	}
 }
 

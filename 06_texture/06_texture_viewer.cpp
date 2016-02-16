@@ -1,9 +1,8 @@
 /////////////////////////////////////////////////////////////////
 //
-//  object bones - main
+//  texture - main
 //
-//  drawing object with wireframe and points, with 
-//  a distance based piont size attenuation shader.
+//  basic color map
 //
 //  Copyright (c) 2016 Bella Q
 //  
@@ -21,9 +20,11 @@
 
 #include "MessRendererApp.h"
 
+
+
 class CRenderer : public MessRenderer::CApp {
 public:
-    CRenderer() : MessRenderer::CApp( "Object Bones" ) {}
+    CRenderer() : MessRenderer::CApp( "Texture Viewer" ) {}
     ~CRenderer() {}
 
 protected:
@@ -97,10 +98,11 @@ void CRenderer::_setupScene() {
     float scale_s = 0.5f;
     float scale_xs = 0.1f;
 
-    CObj obj_cube( GEO_UNIT_CUBE );
-	obj_cube.SetupModelMatrix( translate_center, rot_y30 * rot_x30, scale_s );
-    _scene.AddObj( obj_cube );
-    _scene.ApplyShaderToAllObjs( SD_NORMAL_TEST );
+    CObj obj_spider( GEO_SPIDER );
+	obj_spider.SetShader( SD_NORMAL_TEST );
+	obj_spider.SetupModelMatrix( translate_center, rot_y30 * rot_x30, scale_s );
+    _scene.AddObj( obj_spider );
+
 
 }
 
@@ -118,7 +120,7 @@ void CRenderer::_startup() {
     CObj::_drawAcball = false;
     CObj::_drawBB = false;
     CObj::_drawWireframe = false;
-    CObj::_drawBones = true;
+	CObj::_drawBones = false;
 
     glEnable( GL_PROGRAM_POINT_SIZE );
 }
