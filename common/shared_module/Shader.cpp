@@ -272,13 +272,15 @@ void CShader::createShaderProgram() {
 }
 
 // tell everyone we are going to use the shader
-void CShader::bindShader() {
+void CShader::BindShader() {
 	if( !_spCreated ) {
 		LogError << "shader not inited" << LogEndl;
 		return;
 	}
 
 	glUseProgram( _sp );
+    onBindShader();
+    
 }
 
 void CShader::initSP( const std::string& t_vs, const std::string& t_fs, const std::string& t_gs, const std::string& t_ts ) {
@@ -336,7 +338,7 @@ void CMVPShader::BindShaderWithObjectForDrawing( CGeo* t_object, CMaterial* t_ma
 	CView* view = View_GetActive();
 	assert( view );
 
-	CShader::bindShader();
+	CShader::BindShader();
 
 	glBindBuffer( GL_UNIFORM_BUFFER, _MVP_ubo );
 	mat4* matrices = ( mat4* )glMapBufferRange( GL_UNIFORM_BUFFER, 0, 3 * sizeof( mat4 ), GL_MAP_WRITE_BIT | GL_MAP_INVALIDATE_BUFFER_BIT | GL_MAP_UNSYNCHRONIZED_BIT );

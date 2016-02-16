@@ -42,7 +42,6 @@ protected:
     virtual void onInit() {}
     virtual void onDeinit() {}
 
-	void bindShader();
 
 	// create a shader obj, return the shader obj index
 	std::string glTypeToString( GLenum t_type );
@@ -56,6 +55,7 @@ protected:
 	GLuint createShaderProgram( const GLint& t_vs, const GLint& t_gs, const GLint& t_ts, const GLint& t_fs );
 	void createShaderProgram();
 	bool readFileToStr( const char* t_file, std::string& t_fileContentStr );
+    virtual void onBindShader() {}
 
 public:
 	// attrib location
@@ -66,7 +66,22 @@ public:
 	// 3: texcoords
 
 public:
-	virtual void BindShaderWithObjectForDrawing( CGeo* t_object, CMaterial* t_material, const mat4& t_trandform ) = 0;
+    /////////////////////////////////////////////////////////////////
+    //
+    // simply bind the shader for drawing
+    // this doesn't need to be bound with an object
+    //
+    /////////////////////////////////////////////////////////////////
+    void BindShader();
+
+    /////////////////////////////////////////////////////////////////
+    //
+    // bind the shader with obj for drawing
+    // this needs to be fed with some obj attributes,
+    // such as the geotype, the material, and obj model transform matrix.
+    //
+    /////////////////////////////////////////////////////////////////
+	virtual void BindShaderWithObjectForDrawing( CGeo* t_object, CMaterial* t_material, const mat4& t_trandform ) {}
 	/////////////////////////////////////////////////////////////////
 	//
 	// call this before draw calls

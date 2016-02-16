@@ -14,6 +14,7 @@
 
 #include "MessRendererApp.h"
 
+
 namespace MessRenderer {
 
 	const string g_imageFilePrefix = "images/screenshot_";

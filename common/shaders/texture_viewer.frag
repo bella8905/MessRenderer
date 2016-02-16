@@ -1,6 +1,6 @@
 #version 430
 
-uniform sampler2D s;
+layout ( binding = 1 ) uniform sampler2D s;
 out vec4 fragColour;
 
 void main() {

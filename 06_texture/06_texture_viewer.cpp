@@ -15,118 +15,136 @@
 #include "Light.h"
 #include "Scene.h"
 #include "View.h"
+#include "stb_image/stb_image.h"
 
 #include "Utl_Include.h"
 
 #include "MessRendererApp.h"
 
+class CTextureViewerSD : public CShader {
+public:
+    CTextureViewerSD( const char* t_imageFileName ) : _texture( 0 ) {
+        const std::string VS_FILE = "shaders/texture_viewer.vert";
+        const std::string FS_FILE = "shaders/texture_viewer.frag";
 
+        initSP( VS_FILE, FS_FILE );
+        loadImage( t_imageFileName );
+    }
+
+    virtual ~CTextureViewerSD() {}
+
+public:
+    void onBindShader() {
+        glBindTexture( GL_TEXTURE_2D, _texture );
+
+    }
+
+protected:
+    /////////////////////////////////////////////////////////////////
+    //
+    // texture unit
+    //
+    /////////////////////////////////////////////////////////////////
+    GLuint _texture;
+
+protected:
+    void loadImage( const char* t_imageFileName ) {
+        int width, height;
+        int forceChannels = 4;
+        unsigned char* imageData = stbi_load( t_imageFileName, &width, &height, 0, forceChannels );
+        if( !imageData ) {
+            LogError<<"couldn't load " <<t_imageFileName<<LogEndl; 
+        }
+
+        // check for wonky texture dimensions
+        bool bCheckPOT = true;
+        if( bCheckPOT ) {
+            if( !Utl::IsPOT( width ) || !Utl::IsPOT( height ) ) {
+                LogWarning<<"texture is not power-of-2 dimensions "<<t_imageFileName<<LogEndl;
+            }
+        }
+
+        // flip image upside down
+        // OpenGL expects the 0 on the Y-axis to be at the bottom of the texture , 
+        // but images usually have Y-axis 0 at the top.
+        int widthInBytes = width * 4;
+        unsigned char* top = 0;
+        unsigned char* bottom = 0;
+        int halfHeight = height / 2;
+
+        for( int row = 0; row < halfHeight; row++ ) {
+            top = imageData + row * widthInBytes;
+            bottom = imageData + ( height - row - 1 ) * widthInBytes;
+            for( int col = 0; col < widthInBytes; col++ ) {
+                unsigned char temp = *top;
+                *top = *bottom;
+                *bottom = temp;
+                top++;
+                bottom++;
+            }
+        }
+
+        // copy image data into opengl texture
+        glGenTextures( 1, &_texture );
+        // bind texture to active slot
+        glActiveTexture( GL_TEXTURE1 );
+        glBindTexture( GL_TEXTURE_2D, _texture );
+        // glTexStorage2D( GL_TEXTURE_2D, 0, GL_RGBA, width, height );
+        // glTexSubImage2D( GL_TEXTURE_2D, 0, 0, 0, width, height, GL_RGBA, imageData );
+        glTexImage2D( GL_TEXTURE_2D, 0, GL_RGBA, width, height, 0, GL_RGBA, GL_UNSIGNED_BYTE, imageData );
+        // use sampler in texture directly
+        // wrapping
+        glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_BORDER );
+        glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_BORDER );
+        // filtering
+        glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR );
+        glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR );
+        glBindTexture( GL_TEXTURE_2D, 0 );
+        
+        // free memory
+        // delete imageData;
+
+    }
+
+    void onDeinit() {
+        glDeleteTextures( 1, &_texture );
+    }
+};
 
 class CRenderer : public MessRenderer::CApp {
 public:
-    CRenderer() : MessRenderer::CApp( "Texture Viewer" ) {}
+    CRenderer() : MessRenderer::CApp( "Texture Viewer" ), _textureViewerSD( 0 ) {}
     ~CRenderer() {}
 
 protected:
-    CScene _scene;
+    /////////////////////////////////////////////////////////////////
+    //
+    // a dummy vao which actually takes no vertex data,
+    // but fires rendering command for 4 points
+    //
+    /////////////////////////////////////////////////////////////////
+    GLuint _vao;
+
+    CTextureViewerSD* _textureViewerSD;
 
 protected:
     virtual void _startup();
-    virtual void _update( double t_deltaTime );
     virtual void _render();
     virtual void _shutdown();
 
-    virtual void _onKey( int t_key, int t_action, int t_mods );
-    virtual void _onMouseScroll( double t_offset  );
-
-    void _initModules();
-    void _deinitModules();
-    virtual void _setupScene();
-
 };
-
-void CRenderer::_initModules() {
-    CShaderContainer::GetInstance().Init();
-    CGeoContainer::GetInstance().Init();
-    SArcball::InitArcball();
-}
-
-void CRenderer::_deinitModules() {
-    SArcball::DeinitArcball();
-    CGeoContainer::GetInstance().Deinit();
-    CShaderContainer::GetInstance().Deinit();
-
-}
-
-void CRenderer::_setupScene() {
-    ////////////////////////////////////////////////////////
-    // init scenes
-
-    glm::vec3 camPos( 0.f, 0.f, 2.0f );
-    glm::vec3 camTarget( 0.f, 0.f, 0.f );
-    glm::vec3 camFace = glm::normalize( camTarget - camPos );
-
-    CView* view = View_GetActive();
-    view->SetCameraPostionFaceAndUp( Utl::ToPositon( camPos ), Utl::ToDirection( camFace ) );
-    view->SetHorizontalFieldOfView( Utl::DegToRad( 80.f ) );
-
-
-    // light
-    vec3 lightPos( 0.f, 0.f, 2.f );
-    vec3 lightLs( 1.f, 1.f, 1.f );
-    vec3 lightLd( 0.7f, 0.7f, 0.7f );
-    vec3 lightLa( 0.2f, 0.2f, 0.2f );
-
-    g_simpleLight.Setup( lightPos, lightLs, lightLd, lightLa );
-
-    // material
-    bool hasSpecular = true;
-    Utl::CColor ks( 1.f, 1.f, 1.f );
-    float specularExp = 10.f;
-    Utl::CColor kd( 1.f, 0.5f, 0.f );
-    Utl::CColor ka( 1.f, 1.f, 1.f );
-
-    CMaterial blinnMat( kd, hasSpecular, ks, specularExp, ka );
-
-    // geos
-    vec3 translate_left( -0.8f, 0.f, 0.f );
-    vec3 translate_center( 0.f, 0.f, 0.f );
-    vec3 translate_right( 0.8f, 0.f, 0.f );
-    glm::mat3 rot_noRot( 1.f );
-    mat4 rot_x30 = glm::rotate( glm::mat4(), 30 * Utl::g_o2Pi, glm::vec3( 1, 0, 0 ) );
-    mat4 rot_y30 = glm::rotate( glm::mat4(), -30 * Utl::g_o2Pi, glm::vec3( 0, 1, 0 ) );    
-    float scale_s = 0.5f;
-    float scale_xs = 0.1f;
-
-    CObj obj_spider( GEO_SPIDER );
-	obj_spider.SetShader( SD_NORMAL_TEST );
-	obj_spider.SetupModelMatrix( translate_center, rot_y30 * rot_x30, scale_s );
-    _scene.AddObj( obj_spider );
-
-
-}
 
 
 void CRenderer::_startup() {
-    _initModules();
-    _setupScene();
-
     glEnable( GL_DEPTH_TEST );
     glDepthFunc( GL_LEQUAL );
 
     glCullFace( GL_BACK );
     glFrontFace( GL_CCW );
 
-    CObj::_drawAcball = false;
-    CObj::_drawBB = false;
-    CObj::_drawWireframe = false;
-	CObj::_drawBones = false;
+    _textureViewerSD = new CTextureViewerSD( "../../common/textures/skulluvmap.png" );
 
-    glEnable( GL_PROGRAM_POINT_SIZE );
-}
-
-void CRenderer::_update( double t_deltaTime ) {
-
+    glGenVertexArrays(1, &_vao);
 }
 
 void CRenderer::_render() {
@@ -137,27 +155,20 @@ void CRenderer::_render() {
         glViewport( 0, 0, _info._winWidth, _info._winHeight );
     }
 
-    _scene.Draw();
 
+    glBindVertexArray( _vao );
+    _textureViewerSD->BindShader();
+    glDrawArrays( GL_TRIANGLE_STRIP, 0, 4 );
+    glBindVertexArray( 0 );
 }
 
 void CRenderer::_shutdown() {
-    _deinitModules();
+    glDeleteVertexArrays( 1, &_vao );
+    if( _textureViewerSD ) {
+        delete _textureViewerSD;
+    }
 }
 
-void CRenderer::_onKey( int t_key, int t_action, int t_mods ) {
-}
-
-void CRenderer::_onMouseScroll( double t_offset ) {
-    CView* view = View_GetActive();
-    vec4 pos, face, up, right;
-    view->GetCameraPositionFaceUpAndRight( pos, face, up, right );
-
-    static float zoomSpeed = 0.1f;
-    vec4 newPos = pos + (float)t_offset * zoomSpeed * face;
-    view->SetCameraPostionFaceAndUp( newPos, face, up );
-
-}
 
 
 // app entry
