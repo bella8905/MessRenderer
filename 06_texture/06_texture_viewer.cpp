@@ -228,6 +228,9 @@ protected:
 void CRenderer::_startup() {
     glEnable( GL_DEPTH_TEST );
     glDepthFunc( GL_LEQUAL );
+	// blending
+	glEnable( GL_BLEND );
+	glBlendFunc( GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA );
 
     glCullFace( GL_BACK );
     glFrontFace( GL_CCW );
