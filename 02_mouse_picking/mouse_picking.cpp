@@ -537,9 +537,9 @@ int main()
 //     g_scene.AddObj( obj_cube );
 
     CObj obj_sphere( GEO_UNIT_SPHERE  );
-    obj_sphere._material = blinnMat;
+    // obj_sphere._material = blinnMat;
     obj_sphere.SetupModelMatrix( translate_center, rot_noRot, scale_s );
-    obj_sphere._shaderType = SD_PHONG;
+    obj_sphere.SetShader( SD_PHONG );
     g_scene.AddObj( obj_sphere );
 
 
