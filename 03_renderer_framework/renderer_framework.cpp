@@ -98,19 +98,19 @@ void CTestApp::_setupScene() {
 	// cube 
 	CObj obj_cube( GEO_UNIT_CUBE );
 	obj_cube.SetupModelMatrix( translate_left, rot_x30, scale_s );
-	obj_cube._shaderType = SD_NORMAL_TEST;
+	obj_cube.SetShader( SD_NORMAL_TEST );
 	_scene.AddObj( obj_cube );
 
 	CObj obj_sphere( GEO_UNIT_SPHERE );
 	// obj_sphere._material = blinnMat;
 	obj_sphere.SetupModelMatrix( translate_right, rot_noRot, scale_xs );
-	obj_sphere._shaderType = SD_PHONG;
+	obj_sphere.SetShader( SD_PHONG );
 	_scene.AddObj( obj_sphere );
 
 
 	CObj obj_triangle( GEO_TRIANGLE );
 	obj_triangle.SetupModelMatrix( translate_center, rot_noRot, scale_s );
-	obj_triangle._shaderType = SD_NORMAL_TEST;
+	obj_triangle.SetShader( SD_NORMAL_TEST );
 	_scene.AddObj( obj_triangle );
 
 }
