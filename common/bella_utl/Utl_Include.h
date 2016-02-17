@@ -14,6 +14,7 @@
 #include "Utl_Color.h"
 #include "utl_time.h"
 #include "Utl_Math.h"
+#include "Utl_GLHelper.h"
 
 #include <gl/glew.h>
 #define GLFW_DLL  // force it to use dynamic library, think this is fine for compiling in vs
