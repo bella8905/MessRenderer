@@ -92,6 +92,15 @@ namespace MessRenderer {
 		_activeApp->_onMouseMove( t_x, t_y );
 	}
 
+	// mouse enter
+	void CApp::_onMouseEnter( int t_bEntered ) {
+
+	}
+
+	void CApp::_glfw_onMouseEnter( GLFWwindow* t_win, int t_bEntered ) {
+		_activeApp->_onMouseEnter( t_bEntered );
+	}
+
 	// mouse scroll
 	void CApp::_onMouseScroll( double t_offset ) {
 
@@ -110,6 +119,17 @@ namespace MessRenderer {
 		_activeApp->_onKey( t_key, t_action, t_mods );
 	}
 
+	// on drop
+	void CApp::_onDrop( int t_count, const char** t_paths ) {
+
+	}
+
+	void CApp::_glfw_onDrop( GLFWwindow* t_win, int t_count, const char** t_paths ) {
+		_activeApp->_onDrop( t_count, t_paths );
+	}
+
+
+	// error 
 	void CApp::_onError( int t_error, const char* t_desc ) {
 		LogError << "GLFW ERROR: code " << t_error << " msg: " << t_desc << LogEndl;
 	}
@@ -250,6 +270,8 @@ namespace MessRenderer {
 		glfwSetKeyCallback( _window, CApp::_glfw_onKey );
 		glfwSetMouseButtonCallback( _window, CApp::_glfw_onMouseButton );
 		glfwSetCursorPosCallback( _window, CApp::_glfw_onMouseMove );
+		glfwSetDropCallback( _window, CApp::_glfw_onDrop );
+		glfwSetCursorEnterCallback( _window, CApp::_glfw_onMouseEnter );
 		glfwSetScrollCallback( _window, CApp::_glfw_onMouseScroll );
 	}
 

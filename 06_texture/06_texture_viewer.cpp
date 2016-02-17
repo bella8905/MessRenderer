@@ -23,12 +23,11 @@
 
 class CTextureViewerSD : public CShader {
 public:
-    CTextureViewerSD( const char* t_imageFileName ) : _texture( 0 ) {
+    CTextureViewerSD() : _texture( 0 ) {
         const std::string VS_FILE = "shaders/texture_viewer.vert";
         const std::string FS_FILE = "shaders/texture_viewer.frag";
 
         initSP( VS_FILE, FS_FILE );
-        loadImage( t_imageFileName );
     }
 
     virtual ~CTextureViewerSD() {}
@@ -56,6 +55,68 @@ public:
         }
     }
 
+	void LoadImage( const char* t_imageFileName ) {
+		int width, height;
+		int forceChannels = 4;
+		unsigned char* imageData = stbi_load( t_imageFileName, &width, &height, 0, forceChannels );
+		if( !imageData ) {
+			LogError << "couldn't load " << t_imageFileName << LogEndl;
+		}
+
+		// check for wonky texture dimensions
+		bool bCheckPOT = true;
+		if( bCheckPOT ) {
+			if( !Utl::IsPOT( width ) || !Utl::IsPOT( height ) ) {
+				LogWarning << "texture is not power-of-2 dimensions " << t_imageFileName << LogEndl;
+			}
+		}
+
+		// flip image upside down
+		// OpenGL expects the 0 on the Y-axis to be at the bottom of the texture, 
+		// but images usually have Y-axis 0 at the top.
+		int widthInBytes = width * 4;
+		unsigned char* top = 0;
+		unsigned char* bottom = 0;
+		int halfHeight = height / 2;
+
+		for( int row = 0; row < halfHeight; row++ ) {
+			top = imageData + row * widthInBytes;
+			bottom = imageData + ( height - row - 1 ) * widthInBytes;
+			for( int col = 0; col < widthInBytes; col++ ) {
+				unsigned char temp = *top;
+				*top = *bottom;
+				*bottom = temp;
+				top++;
+				bottom++;
+			}
+		}
+
+		// copy image data into opengl texture
+		if( _texture > 0 ) {
+			glDeleteTextures( 1, &_texture );
+		}
+
+		glGenTextures( 1, &_texture );
+		// bind texture to active slot
+		glActiveTexture( GL_TEXTURE1 );
+		glBindTexture( GL_TEXTURE_2D, _texture );
+		// glTexStorage2D( GL_TEXTURE_2D, 0, GL_RGBA, width, height );
+		// glTexSubImage2D( GL_TEXTURE_2D, 0, 0, 0, width, height, GL_RGBA, imageData );
+		glTexImage2D( GL_TEXTURE_2D, 0, GL_RGBA, width, height, 0, GL_RGBA, GL_UNSIGNED_BYTE, imageData );
+		// use sampler in texture directly
+		// wrapping
+		glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_BORDER );
+		glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_BORDER );
+		// filtering
+		glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR );
+		glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR );
+		glBindTexture( GL_TEXTURE_2D, 0 );
+
+		// free memory
+		// delete imageData;
+
+	}
+
 protected:
     /////////////////////////////////////////////////////////////////
     //
@@ -71,73 +132,21 @@ protected:
     GLuint _viewport_ubo;
 
 protected:
-    void loadImage( const char* t_imageFileName ) {
-        int width, height;
-        int forceChannels = 4;
-        unsigned char* imageData = stbi_load( t_imageFileName, &width, &height, 0, forceChannels );
-        if( !imageData ) {
-            LogError<<"couldn't load " <<t_imageFileName<<LogEndl; 
-        }
-
-        // check for wonky texture dimensions
-        bool bCheckPOT = true;
-        if( bCheckPOT ) {
-            if( !Utl::IsPOT( width ) || !Utl::IsPOT( height ) ) {
-                LogWarning<<"texture is not power-of-2 dimensions "<<t_imageFileName<<LogEndl;
-            }
-        }
-
-        // flip image upside down
-        // OpenGL expects the 0 on the Y-axis to be at the bottom of the texture, 
-        // but images usually have Y-axis 0 at the top.
-        int widthInBytes = width * 4;
-        unsigned char* top = 0;
-        unsigned char* bottom = 0;
-        int halfHeight = height / 2;
-
-        for( int row = 0; row < halfHeight; row++ ) {
-            top = imageData + row * widthInBytes;
-            bottom = imageData + ( height - row - 1 ) * widthInBytes;
-            for( int col = 0; col < widthInBytes; col++ ) {
-                unsigned char temp = *top;
-                *top = *bottom;
-                *bottom = temp;
-                top++;
-                bottom++;
-            }
-        }
-
-        // copy image data into opengl texture
-        glGenTextures( 1, &_texture );
-        // bind texture to active slot
-        glActiveTexture( GL_TEXTURE1 );
-        glBindTexture( GL_TEXTURE_2D, _texture );
-        // glTexStorage2D( GL_TEXTURE_2D, 0, GL_RGBA, width, height );
-        // glTexSubImage2D( GL_TEXTURE_2D, 0, 0, 0, width, height, GL_RGBA, imageData );
-        glTexImage2D( GL_TEXTURE_2D, 0, GL_RGBA, width, height, 0, GL_RGBA, GL_UNSIGNED_BYTE, imageData );
-        // use sampler in texture directly
-        // wrapping
-        glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_BORDER );
-        glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_BORDER );
-        // filtering
-        glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR );
-        glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR );
-        glBindTexture( GL_TEXTURE_2D, 0 );
-        
-        // free memory
-        // delete imageData;
-
-    }
+ 
 
     virtual void onInit(){
         glGenBuffers( 1, &_viewport_ubo );
         glBindBuffer( GL_UNIFORM_BUFFER, _viewport_ubo );
         glBufferData( GL_UNIFORM_BUFFER, sizeof( GLfloat ) * 2, NULL, GL_DYNAMIC_DRAW );
         glBindBuffer( GL_UNIFORM_BUFFER, 0 );
+
     }
 
     virtual void onDeinit() {
-        glDeleteTextures( 1, &_texture );
+		if( _texture > 0 ) {
+			glDeleteTextures( 1, &_texture );
+		}
+
         // viewport ubo
         glDeleteBuffers( 1, &_viewport_ubo );
     }
@@ -163,7 +172,7 @@ protected:
     virtual void _startup();
     virtual void _render();
     virtual void _shutdown();
-
+	virtual void _onKey( int t_key, int t_action, int t_mods );
 };
 
 
@@ -174,7 +183,9 @@ void CRenderer::_startup() {
     glCullFace( GL_BACK );
     glFrontFace( GL_CCW );
 
-    _textureViewerSD = new CTextureViewerSD( "../../common/textures/skulluvmap.png" );
+    _textureViewerSD = new CTextureViewerSD();
+	const char* defaultImage = "../../common/textures/skulluvmap.png";
+	_textureViewerSD->LoadImage( defaultImage );
 
     glGenVertexArrays(1, &_vao);
 }
@@ -201,10 +212,23 @@ void CRenderer::_shutdown() {
     }
 }
 
+void CRenderer::_onKey( int t_key, int t_action, int t_mods ) {
+	if( t_key == GLFW_KEY_SPACE && t_action == GLFW_PRESS ) {
+		Utl::CFileBrowserDialog fileBrowser;
+		// filtering image files
+		fileBrowser._filter = "png files(*.png)\0*.png\0jpg files(*.jpg)\0*.jpg\0\0";
+		if( fileBrowser.ShowDialog() ) {
+			_textureViewerSD->LoadImage( fileBrowser._fileName );
+		}
+
+	}
+}
+
 
 
 // app entry
 int main( int argc, const char ** argv ) {
+
     CRenderer *app = new CRenderer();
     app->Run();                                  
     delete app;                                     

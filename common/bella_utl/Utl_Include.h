@@ -10,6 +10,7 @@
 
 // utilities header files
 #include "Utl_FileStreamHandler.h"
+#include "Utl_FileBrowserDialog.h"
 #include "Utl_Color.h"
 #include "utl_time.h"
 #include "Utl_Math.h"

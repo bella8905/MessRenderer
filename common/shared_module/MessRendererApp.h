@@ -85,7 +85,9 @@ namespace MessRenderer {
 		virtual void _onKey( int t_key, int t_action, int t_mods );
 		virtual void _onMouseButton( int t_button, int t_action );
 		virtual void _onMouseMove( double t_x, double t_y );
+		virtual void _onMouseEnter( int t_bEntered );
 		virtual void _onMouseScroll( double t_offset );
+		virtual void _onDrop( int t_count, const char** t_paths );
 		virtual void _onError( int t_error, const char* t_desc );
 
 		/////////////////////////////////////////////////////////////////
@@ -102,11 +104,15 @@ namespace MessRenderer {
 		static void _glfw_onMouseButton( GLFWwindow* t_win, int t_button, int t_action, int t_mods );
 		//  GLFWcursorposfun
 		static void _glfw_onMouseMove( GLFWwindow* t_win, double t_x, double t_y );
+		//  GLFWcursorenterfun
+		static void _glfw_onMouseEnter( GLFWwindow* t_win, int t_bEntered );
 		//  GLFWscrollfun
 		static void _glfw_onMouseScroll( GLFWwindow* t_win, double t_xoffset, double t_yoffset );
+		//  GLFWdropfun
+		static void _glfw_onDrop( GLFWwindow* t_win, int t_count, const char** t_paths );
 		//  GLFWerrorfun
 		static void _glfw_onError( int t_error, const char* t_desc );
-
+	
 		void _glfw_registerCallbacks();
 		bool _glfw_createWindow();
 

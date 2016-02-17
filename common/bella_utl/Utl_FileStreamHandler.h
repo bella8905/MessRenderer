@@ -50,11 +50,11 @@ namespace Utl {
 	// and be nicer to different end flags
 	//  
 	/////////////////////////////////////////////////////////////////
-	class SFileStreamHandler {
+	class CFileStreamHandler {
 
 	public:
-		SFileStreamHandler( const string& t_File ) : _bInited( false ) { _init( t_File ); }
-		~SFileStreamHandler() {}
+		CFileStreamHandler( const string& t_File ) : _bInited( false ) { _init( t_File ); }
+		~CFileStreamHandler() {}
 
 	private:
 		bool _bInited;
@@ -68,12 +68,12 @@ namespace Utl {
 		//  read operators
 		//  
 		/////////////////////////////////////////////////////////////////
-		SFileStreamHandler& operator >> ( int& t_Val );
-		SFileStreamHandler& operator >> ( us& t_Val );
-		SFileStreamHandler& operator >> ( ul& t_Val );
-		SFileStreamHandler& operator >> ( string& t_Val );
-		SFileStreamHandler& operator >> ( float& t_Val );
-		SFileStreamHandler& operator >> ( bool& t_Val );
+		CFileStreamHandler& operator >> ( int& t_Val );
+		CFileStreamHandler& operator >> ( us& t_Val );
+		CFileStreamHandler& operator >> ( ul& t_Val );
+		CFileStreamHandler& operator >> ( string& t_Val );
+		CFileStreamHandler& operator >> ( float& t_Val );
+		CFileStreamHandler& operator >> ( bool& t_Val );
 		/////////////////////////////////////////////////////////////////
 		//
 		//  void operator

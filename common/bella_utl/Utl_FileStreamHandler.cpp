@@ -17,7 +17,7 @@
 
 namespace Utl {
 
-	void SFileStreamHandler::_init( const string& t_file ) {
+	void CFileStreamHandler::_init( const string& t_file ) {
 		if( _bInited ) {
 			// MsgErr( "already inited" );
 			return;
@@ -34,7 +34,7 @@ namespace Utl {
 		_bInited = true;
 	}
 
-	void SFileStreamHandler::Deinit() {
+	void CFileStreamHandler::Deinit() {
 		if( !_bInited ) {
 			// MsgErr( "hasn't been inited" );
 			return;
@@ -46,19 +46,19 @@ namespace Utl {
 		_bInited = false;
 	}
 
-	void SFileStreamHandler::CloseFile() {
+	void CFileStreamHandler::CloseFile() {
 		if( _bInited ) {
 			_fileStream.close();
 			_fileStream.clear();
 		}
 	}
 
-	void SFileStreamHandler::_clearCachedStrs() {
+	void CFileStreamHandler::_clearCachedStrs() {
 		queue<string>().swap( _cachedStrs );
 	}
 
 
-	bool SFileStreamHandler::_getNextStrFromCachedStrsWithCommentStripped( string& t_Str ) {
+	bool CFileStreamHandler::_getNextStrFromCachedStrsWithCommentStripped( string& t_Str ) {
 		string Str;
 		if( !_cachedStrs.empty() ) {
 			// fetch the next one from our cached queue
@@ -78,7 +78,7 @@ namespace Utl {
 		return false;
 	}
 
-	void SFileStreamHandler::_fillCachedStrs( const string& t_Str ) {
+	void CFileStreamHandler::_fillCachedStrs( const string& t_Str ) {
 		_clearCachedStrs();
 		std::stringstream strstr( t_Str );
 		std::istream_iterator<std::string> it( strstr );
@@ -90,7 +90,7 @@ namespace Utl {
 		}
 	}
 
-	bool SFileStreamHandler::_getNextStr( string& t_Str ) {
+	bool CFileStreamHandler::_getNextStr( string& t_Str ) {
 		t_Str.clear();
 		if( !_bInited ) {
 			// MsgErr( "hasn't inited" );
@@ -118,7 +118,7 @@ namespace Utl {
 	}
 
 
-	bool SFileStreamHandler::_safeReadLine( string& t_Str ) {
+	bool CFileStreamHandler::_safeReadLine( string& t_Str ) {
 		// The characters in the stream are read one-by-one using a std::streambuf.
 		// That is faster than reading them one-by-one using the std::istream.
 		// Code that uses streambuf this way must be guarded by a sentry object.
@@ -154,13 +154,13 @@ namespace Utl {
 
 	}
 
-	SFileStreamHandler& SFileStreamHandler::operator >> ( string& t_Val ) {
+	CFileStreamHandler& CFileStreamHandler::operator >> ( string& t_Val ) {
 		if( _bInited ) _getNextStr( t_Val );
 		return *this;
 	}
 
 
-	SFileStreamHandler& SFileStreamHandler::operator >> ( int& t_Val ) {
+	CFileStreamHandler& CFileStreamHandler::operator >> ( int& t_Val ) {
 		if( _bInited ) {
 			string Str;
 			( *this ) >> Str;
@@ -171,7 +171,7 @@ namespace Utl {
 	}
 
 
-	SFileStreamHandler& SFileStreamHandler::operator >> ( bool& t_Val ) {
+	CFileStreamHandler& CFileStreamHandler::operator >> ( bool& t_Val ) {
 		if( _bInited ) {
 			string Str;
 			( *this ) >> Str;
@@ -181,7 +181,7 @@ namespace Utl {
 		return *this;
 	}
 
-	SFileStreamHandler& SFileStreamHandler::operator >> ( us& t_Val ) {
+	CFileStreamHandler& CFileStreamHandler::operator >> ( us& t_Val ) {
 		if( _bInited ) {
 			int IntVal;
 			( *this ) >> IntVal;
@@ -191,7 +191,7 @@ namespace Utl {
 		return *this;
 	}
 
-	SFileStreamHandler& SFileStreamHandler::operator >> ( ul& t_Val ) {
+	CFileStreamHandler& CFileStreamHandler::operator >> ( ul& t_Val ) {
 		if( _bInited ) {
 			int IntVal;
 			( *this ) >> IntVal;
@@ -201,7 +201,7 @@ namespace Utl {
 		return *this;
 	}
 
-	SFileStreamHandler& SFileStreamHandler::operator >> ( float& t_Val ) {
+	CFileStreamHandler& CFileStreamHandler::operator >> ( float& t_Val ) {
 		if( _bInited ) {
 			string Str;
 			( *this ) >> Str;
@@ -212,11 +212,11 @@ namespace Utl {
 	}
 
 
-	int SFileStreamHandler::_strToInt( const string& t_Str ) {
+	int CFileStreamHandler::_strToInt( const string& t_Str ) {
 		return atoi( t_Str.c_str() );
 	}
 
-	float SFileStreamHandler::_strToFloat( const string& t_Str ) {
+	float CFileStreamHandler::_strToFloat( const string& t_Str ) {
 		return ( float )atof( t_Str.c_str() );
 	}
 
