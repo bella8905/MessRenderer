@@ -11,6 +11,10 @@ layout ( std140, binding = 0 ) uniform VIEWPORT {
 	float _height;
 }viewport;
 
+layout ( std140, binding = 1 ) uniform IMAGE {
+	float _scale;
+}image;
+
 
 void main() {
 
@@ -20,6 +24,8 @@ void main() {
 	//  adjust the y position so the texture starts from top
 	//  
 	/////////////////////////////////////////////////////////////////
-	float adjustedY = gl_FragCoord.y - ( viewport._height - textureSize( s, 0 ).y );
-    fragColour = texture( s, vec2( gl_FragCoord.x, adjustedY ) / textureSize( s, 0 ) );
+	float adjustedY = ( gl_FragCoord.y - ( viewport._height - textureSize( s, 0 ).y * image._scale ) ) / image._scale;
+	// float adjustedY = gl_FragCoord.y / image._scale;
+	float adjustedX = gl_FragCoord.x / image._scale;
+    fragColour = texture( s, vec2( adjustedX, adjustedY ) / textureSize( s, 0 ) );
 }
