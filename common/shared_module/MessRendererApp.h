@@ -119,6 +119,12 @@ namespace MessRenderer {
 
 	public:
 		void Run();
+        void GetWindowSize( float& t_width, float& t_height ) {
+            t_width = (float)_info._winWidth;
+            t_height = (float)_info._winHeight;
+        }
+
+        static CApp* GetActiveApp() { return _activeApp; }
 	};
 
 

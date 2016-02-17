@@ -37,6 +37,23 @@ public:
     void onBindShader() {
         glBindTexture( GL_TEXTURE_2D, _texture );
 
+        ///////////////////////////////////////////////////
+        // use window size for now
+        ///////////////////////////////////////////////////
+        MessRenderer::CApp* activeApp = MessRenderer::CApp::GetActiveApp();
+        if( activeApp) {
+            float winWidth, winHeight;
+            activeApp->GetWindowSize( winWidth, winHeight );
+
+            glBindBuffer( GL_UNIFORM_BUFFER, _viewport_ubo );
+            float* winSize = ( float* )glMapBufferRange( GL_UNIFORM_BUFFER, 0, 2 * sizeof( float ), GL_MAP_WRITE_BIT | GL_MAP_INVALIDATE_BUFFER_BIT | GL_MAP_UNSYNCHRONIZED_BIT );
+            winSize[0] = winWidth;
+            winSize[1] = winHeight;
+            glUnmapBuffer( GL_UNIFORM_BUFFER );
+            glBindBuffer( GL_UNIFORM_BUFFER, 0 );
+
+            glBindBufferBase( GL_UNIFORM_BUFFER, 0, _viewport_ubo );
+        }
     }
 
 protected:
@@ -46,6 +63,12 @@ protected:
     //
     /////////////////////////////////////////////////////////////////
     GLuint _texture;
+    /////////////////////////////////////////////////////////////////
+    //
+    // ubo which stores viewport related attrtibutes
+    //
+    /////////////////////////////////////////////////////////////////
+    GLuint _viewport_ubo;
 
 protected:
     void loadImage( const char* t_imageFileName ) {
@@ -65,7 +88,7 @@ protected:
         }
 
         // flip image upside down
-        // OpenGL expects the 0 on the Y-axis to be at the bottom of the texture , 
+        // OpenGL expects the 0 on the Y-axis to be at the bottom of the texture, 
         // but images usually have Y-axis 0 at the top.
         int widthInBytes = width * 4;
         unsigned char* top = 0;
@@ -106,8 +129,17 @@ protected:
 
     }
 
-    void onDeinit() {
+    virtual void onInit(){
+        glGenBuffers( 1, &_viewport_ubo );
+        glBindBuffer( GL_UNIFORM_BUFFER, _viewport_ubo );
+        glBufferData( GL_UNIFORM_BUFFER, sizeof( GLfloat ) * 2, NULL, GL_DYNAMIC_DRAW );
+        glBindBuffer( GL_UNIFORM_BUFFER, 0 );
+    }
+
+    virtual void onDeinit() {
         glDeleteTextures( 1, &_texture );
+        // viewport ubo
+        glDeleteBuffers( 1, &_viewport_ubo );
     }
 };
 

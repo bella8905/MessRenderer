@@ -11,6 +11,7 @@
 
 #include "View.h"
 
+#include "MessRendererApp.h"
 
 static struct {
 	CView _view;
@@ -314,6 +315,13 @@ void CView::SetHorizontalPerspective( float t_perspective ) {
 	_view2ProjMatrix[0][0] = t_perspective;
 
 	float defaultAspect = 800.f / 600.f;
+    MessRenderer::CApp* activeApp = MessRenderer::CApp::GetActiveApp();
+    if( activeApp) {
+        float winWidth, winHeight;
+        activeApp->GetWindowSize( winWidth, winHeight );
+        defaultAspect = winWidth / winHeight;
+    }
+
 	float verticalPerspective = t_perspective * defaultAspect;
 	_view2ProjMatrix[1][1] = verticalPerspective;
 
