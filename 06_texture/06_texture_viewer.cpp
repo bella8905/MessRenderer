@@ -132,7 +132,7 @@ public:
 		glBindTexture( GL_TEXTURE_2D, 0 );
 
 		// free memory
-		// delete imageData;
+		stbi_image_free( imageData );
 
 	}
 

@@ -59,6 +59,7 @@ vs_projects
 common/libs
 common/include
 common/models
+common/textures
 MessRenderer.VC.opendb
 projects
 Debug
