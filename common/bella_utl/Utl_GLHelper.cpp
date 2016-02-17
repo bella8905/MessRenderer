@@ -55,6 +55,20 @@ namespace Utl {
             }
         }
 
+
+        // The GL spec just specifies that the texture name is free for reuse, 
+        // and that the texture object has neither contents nor dimensionality. 
+        // It says nothing whatsoever about the memory used for the object. 
+        // GL implementations are free to keep the memory hanging around for 
+        // subsequent reuse if necessary, to free it some arbitrary time later, 
+        // or whatever the driver writer decides is the best behavior.
+        // Don't expect a glDeleteTextures call to behave like free () or delete in C/C++. 
+
+        // if( t_texture > 0 ) {
+        //     glDeleteTextures( 1, &t_texture );
+        // }
+        // glGenTextures( 1, &t_texture );
+        
         // copy image data into opengl texture
         if( t_texture == 0 ) {
             glGenTextures( 1, &t_texture );
