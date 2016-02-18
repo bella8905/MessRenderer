@@ -486,6 +486,10 @@ void CAreaPaintingShader::onInitMVPShader() {
 	glBindBuffer( GL_UNIFORM_BUFFER, 0 );
 }
 
+void CAreaPaintingShader::onDeinitMVPShader() {
+	glDeleteBuffers( 1, &_area_uniform_buffer );
+}
+
 void CAreaPaintingShader::BindShaderWithObjectForDrawing( CGeo* t_object, CMaterial* t_material, const mat4& t_trandform ) {
 	CMVPShader::BindShaderWithObjectForDrawing( t_object, t_material, t_trandform );
 	
@@ -516,7 +520,7 @@ const std::string PHONG_SHADER_VS_FILE = "shaders/phong.vert";
 const std::string PHONG_SHADER_FS_FILE = "shaders/phong.frag";
 
 
-CPhongShader::CPhongShader() : _light( 0 ), _lighting_ubo( 0 ) {
+CPhongShader::CPhongShader() : _light( 0 ), _lighting_ubo( 0 ), _mtl_ubo( 0 ) {
 	initSP( PHONG_SHADER_VS_FILE, PHONG_SHADER_FS_FILE );
 }
 
@@ -524,8 +528,18 @@ CPhongShader::CPhongShader() : _light( 0 ), _lighting_ubo( 0 ) {
 void CPhongShader::onInitMVPShader() {
 	glGenBuffers( 1, &_lighting_ubo );
 	glBindBuffer( GL_UNIFORM_BUFFER, _lighting_ubo );
-	glBufferData( GL_UNIFORM_BUFFER, sizeof( SLIGHTING ), NULL, GL_DYNAMIC_DRAW );
+	glBufferData( GL_UNIFORM_BUFFER, sizeof( CLight::SLIGHTING_UBO_DATA ), NULL, GL_DYNAMIC_DRAW );
 	glBindBuffer( GL_UNIFORM_BUFFER, 0 );
+
+	glGenBuffers( 1, &_mtl_ubo );
+	glBindBuffer( GL_UNIFORM_BUFFER, _mtl_ubo );
+	glBufferData( GL_UNIFORM_BUFFER, sizeof( CMaterial::SMATERIAL_UBO_DATA ), NULL, GL_DYNAMIC_DRAW );
+	glBindBuffer( GL_UNIFORM_BUFFER, 0 );
+}
+
+void CPhongShader::onDeinitMVPShader() {
+	glDeleteBuffers( 1, &_lighting_ubo );
+	glDeleteBuffers( 1, &_mtl_ubo );
 }
 
 
@@ -535,31 +549,23 @@ void CPhongShader::BindShaderWithObjectForDrawing( CGeo* t_object, CMaterial* t_
 	CMVPShader::BindShaderWithObjectForDrawing( t_object, t_material, t_trandform );
 
 
-
+	// lighting
 	glBindBuffer( GL_UNIFORM_BUFFER, _lighting_ubo );
-	SLIGHTING* lighting = ( SLIGHTING* )glMapBufferRange( GL_UNIFORM_BUFFER, 0, sizeof( SLIGHTING ), GL_MAP_WRITE_BIT | GL_MAP_INVALIDATE_BUFFER_BIT | GL_MAP_UNSYNCHRONIZED_BIT );
-	lighting->_lightPosInWorld = _light->GetPos();
-	lighting->_ls = Utl::ToDirection( _light->GetLs() );
-	lighting->_ld = Utl::ToDirection( _light->GetLd() );
-	lighting->_la = Utl::ToDirection( _light->GetLa() );
-	lighting->_kd = t_material->GetKd()._Color;
-	lighting->_ka = t_material->GetKa()._Color;
-
-	if( t_material->GetHasSpecular() ) {
-		lighting->_ks = t_material->GetKs()._Color;
-		lighting->_splExp = t_material->GetSplExp();
-
-	} else {
-		// set ks to all zeros
-		lighting->_ks = vec4( 0.f, 0.f, 0.f, 0.f );
-		lighting->_splExp = 0.f;
-	}
-
+	CLight::SLIGHTING_UBO_DATA* lightingData = ( CLight::SLIGHTING_UBO_DATA* )glMapBufferRange( GL_UNIFORM_BUFFER, 0, sizeof( CLight::SLIGHTING_UBO_DATA ), GL_MAP_WRITE_BIT | GL_MAP_INVALIDATE_BUFFER_BIT | GL_MAP_UNSYNCHRONIZED_BIT );
+	_light->PopulateUBOData( *lightingData );
 	glUnmapBuffer( GL_UNIFORM_BUFFER );
 	glBindBuffer( GL_UNIFORM_BUFFER, 0 );
 
 	glBindBufferBase( GL_UNIFORM_BUFFER, 2, _lighting_ubo );
-	
+
+	// material
+	glBindBuffer( GL_UNIFORM_BUFFER, _mtl_ubo );
+	CMaterial::SMATERIAL_UBO_DATA* mtlData = ( CMaterial::SMATERIAL_UBO_DATA* )glMapBufferRange( GL_UNIFORM_BUFFER, 0, sizeof( CMaterial::SMATERIAL_UBO_DATA ), GL_MAP_WRITE_BIT | GL_MAP_INVALIDATE_BUFFER_BIT | GL_MAP_UNSYNCHRONIZED_BIT );
+	t_material->PopulateUBOData( *mtlData );
+	glUnmapBuffer( GL_UNIFORM_BUFFER );
+	glBindBuffer( GL_UNIFORM_BUFFER, 0 );
+
+	glBindBufferBase( GL_UNIFORM_BUFFER, 3, _mtl_ubo );
 }
 
 /////////////////////////////////////////////////////////////////

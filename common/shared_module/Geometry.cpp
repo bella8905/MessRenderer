@@ -18,6 +18,11 @@
 #include "assimp/Importer.hpp"
 #include "assimp/postprocess.h"
 
+/////////////////////////////////////////////////////////////////
+//
+//  Geo Base
+//  
+/////////////////////////////////////////////////////////////////
 GLuint CGeo::_vao_boundBox = 0;
 GLuint CGeo::_vbo_boundBox = 0;
 GLuint CGeo::_ibo_boundBox = 0;
@@ -154,8 +159,11 @@ void CGeo::DrawModel( const SHADER_TYPE& t_shader, CMaterial* t_material, const 
 	DrawModel( shader, t_material, t_modelMatrix, t_drawBB );
 }
 
-
-// primitive
+/////////////////////////////////////////////////////////////////
+//
+// Primitive
+//  
+/////////////////////////////////////////////////////////////////
 bool CPrimGeo::initModel() {
 	return CGeo::initModel();
 }
@@ -215,7 +223,11 @@ void CPrimGeo::genBufferData( const vector<SVertex>& t_vertices, const vector<GL
 
 }
 
-// triangle
+/////////////////////////////////////////////////////////////////
+//
+//  Triangle
+//  
+/////////////////////////////////////////////////////////////////
 bool CTriangleGeo::initModel() {
 	LogMsg << "Init Triangle" << LogEndl;
 	// if obj is already inited, simply return
@@ -251,7 +263,13 @@ bool CTriangleGeo::initModel() {
 	return _inited;
 }
 
-// unit cube
+
+
+/////////////////////////////////////////////////////////////////
+//
+// Unit Cube
+//  
+/////////////////////////////////////////////////////////////////
 bool CUnitCubeGeo::initModel() {
 	LogMsg << "Init Unit Cube" << LogEndl;
 	// if obj is already inited, simply return
@@ -313,7 +331,12 @@ bool CUnitCubeGeo::initModel() {
 	return _inited;
 }
 
-// unit sphere
+
+/////////////////////////////////////////////////////////////////
+//
+// Unit Sphere
+//  
+/////////////////////////////////////////////////////////////////
 bool CUnitSphereGeo::initModel() {
 	LogMsg << "Init Unit Sphere" << LogEndl;
 	// if obj is already inited, simply return
@@ -392,7 +415,14 @@ bool CUnitSphereGeo::initModel() {
 	return _inited;
 }
 
-// model
+
+
+
+/////////////////////////////////////////////////////////////////
+//
+//  Model Geo - Mesh
+//  
+/////////////////////////////////////////////////////////////////
 void CModelGeo::SMesh::InitMesh( const aiMesh* t_aiMesh, bool t_unified ) {
 	if( _inited )   return;
 	assert( t_aiMesh );
@@ -402,6 +432,8 @@ void CModelGeo::SMesh::InitMesh( const aiMesh* t_aiMesh, bool t_unified ) {
 
 	_hasTex = t_aiMesh->HasTextureCoords( 0 );
 	_hasFaces = t_aiMesh->HasFaces();
+	_mtlIdx = t_aiMesh->mMaterialIndex;
+
 	assert( _hasFaces );  // weird enough if we don't have faces in this model
 
 
@@ -492,7 +524,6 @@ void CModelGeo::SMesh::InitMesh( const aiMesh* t_aiMesh, bool t_unified ) {
 	glBindVertexArray( 0 );
 
 	_inited = true;
-
 }
 
 void CModelGeo::SMesh::DeinitMesh() {
@@ -527,10 +558,217 @@ void CModelGeo::SMesh::DrawMesh() {
 }
 
 
+/////////////////////////////////////////////////////////////////
+//
+// Model Geo - Material
+//  
+/////////////////////////////////////////////////////////////////
+void CModelGeo::SMaterial::InitMaterial( const aiMaterial* t_aiMaterial, const std::unordered_map<std::string, GLuint>& t_textureMap ) {
+	assert( t_aiMaterial );
+	
+	// texture id
+	uint texIdx = 0;
+	aiString texPath;
+	aiReturn texFound = t_aiMaterial->GetTexture( aiTextureType_DIFFUSE, texIdx, &texPath );
+	while( texFound == AI_SUCCESS ) {
+		std::string pathStr = texPath.data;
+		std::unordered_map<std::string, GLuint>::const_iterator got = t_textureMap.find( pathStr );
+		if( got != t_textureMap.end() ) {
+			_textureIds.push_back( got->second );
+		} else {
+			LogError << "texture not saved?" << LogEndl;
+		}
+
+		// go to the next texture
+		texIdx++;
+		texFound = t_aiMaterial->GetTexture( aiTextureType_DIFFUSE, texIdx, &texPath );
+	}
+
+	// material
+	glGenBuffers( 1, &_mtl_ubo );
+	glBindBuffer( GL_UNIFORM_BUFFER, _mtl_ubo );
+	glBufferData( GL_UNIFORM_BUFFER, sizeof( CMaterial::SMATERIAL_UBO_DATA ), NULL, GL_DYNAMIC_DRAW );
+	CMaterial::SMATERIAL_UBO_DATA* mtlData = ( CMaterial::SMATERIAL_UBO_DATA* )glMapBufferRange( GL_UNIFORM_BUFFER, 0, sizeof( CMaterial::SMATERIAL_UBO_DATA ), GL_MAP_WRITE_BIT | GL_MAP_INVALIDATE_BUFFER_BIT | GL_MAP_UNSYNCHRONIZED_BIT );
+	*mtlData = CMaterial::SMATERIAL_UBO_DATA();
+
+	aiColor4D diffuse;
+	if( AI_SUCCESS == aiGetMaterialColor( t_aiMaterial, AI_MATKEY_COLOR_DIFFUSE, &diffuse ) ) {
+		mtlData[0]._kd = vec4( diffuse.r, diffuse.g, diffuse.b, diffuse.a );
+	}
+
+	aiColor4D ambient;
+	if( AI_SUCCESS == aiGetMaterialColor( t_aiMaterial, AI_MATKEY_COLOR_AMBIENT, &ambient ) ) {
+		mtlData[0]._ka = vec4( ambient.r, ambient.g, ambient.b, ambient.a );
+	}
+
+	aiColor4D specular;
+	if( AI_SUCCESS == aiGetMaterialColor( t_aiMaterial, AI_MATKEY_COLOR_SPECULAR, &specular ) ) {
+		mtlData[0]._ks = vec4( specular.r, specular.g, specular.b, specular.a );
+	}
+
+	float shininess = 0;
+	uint max;
+	aiReturn ret1 = aiGetMaterialFloatArray( t_aiMaterial, AI_MATKEY_SHININESS, &shininess, &max );
+	if( AI_SUCCESS == ret1 ) {
+		float strenth;
+		aiReturn ret2 = aiGetMaterialFloatArray( t_aiMaterial, AI_MATKEY_SHININESS_STRENGTH, &strenth, &max );
+		if( AI_SUCCESS == ret2 ) {
+			shininess *= strenth;
+		}
+	} else {
+		mtlData[0]._ks = vec4( 0.f, 0.f, 0.f, 0.f );
+	}
+
+	mtlData[0]._splExp = shininess;
+
+	glUnmapBuffer( GL_UNIFORM_BUFFER );
+	glBindBuffer( GL_UNIFORM_BUFFER, 0 );
+
+}
+
+void CModelGeo::SMaterial::DeinitMaterial() {
+	if( _mtl_ubo > 0 ) {
+		glDeleteBuffers( 1, &_mtl_ubo );
+	}
+}
+
+
+/////////////////////////////////////////////////////////////////
+//
+//  ModelGeo
+//  
+/////////////////////////////////////////////////////////////////
 bool CModelGeo::_bDumpSceneInfo = true;
 
 CModelGeo::~CModelGeo() {
 	deinitModel();
+}
+
+bool CModelGeo::findImagePath( std::string t_imagePath, std::string& t_out ) {
+	// first, try to find it directly
+	if( Utl::DoesFileExist( t_imagePath ) ) {
+		t_out = t_imagePath;
+		return true;
+	}
+
+	// second, search in the model folder
+	string path;
+	Utl::GetFilePathWithSlash( _fileName, path );
+	string fileName;
+	Utl::GetFileName( t_imagePath, fileName );
+	string filespec = path + fileName;
+	if( Utl::DoesFileExist( filespec ) ) {
+		t_out = filespec;
+		return true;
+	}
+
+	// third, search in the common folder
+	static const string TEX_FOLDER = "../../common/textures/";
+	filespec = TEX_FOLDER + fileName;
+	if( Utl::DoesFileExist( filespec ) ) {
+		t_out = filespec;
+		return true;
+	}
+
+	return false;
+
+}
+
+void CModelGeo::initTextures( const aiScene* t_aiScene, std::unordered_map<std::string, GLuint>& t_textureMap ) {
+
+	for( uint i = 0; i < t_aiScene->mNumMaterials; ++i ) {
+		const aiMaterial* material = t_aiScene->mMaterials[i];
+		// only count diffuse textures for now
+		uint texIdx = 0;
+		aiString texPath;
+		aiReturn texFound = material->GetTexture( aiTextureType_DIFFUSE, texIdx, &texPath );
+		while( texFound == AI_SUCCESS ) {
+			std::string pathStr( texPath.data );
+			std::unordered_map<std::string, GLuint>::const_iterator got;
+			if( t_textureMap.find( pathStr ) == t_textureMap.end() ) {
+				// new texture, store it, generate and load the texture
+				GLuint texId = 0;
+				string unifiedFilePath;
+				findImagePath( pathStr, unifiedFilePath );
+				if( Utl::GL_LoadImage( texId, unifiedFilePath.c_str() ) ) {
+					t_textureMap[texPath.data] = texId;
+				} else {
+					// invalid texture
+					t_textureMap[texPath.data] = 0;
+				}
+			}
+
+			// go to the next texture
+			texIdx++;
+			texFound = material->GetTexture( aiTextureType_DIFFUSE, texIdx, &texPath );
+		}
+	}
+}
+
+void CModelGeo::deinitTextures() {
+	for( auto it = _textureMap.begin(); it != _textureMap.end(); ++it ) {
+		GLuint texId = it->second;
+		if( texId > 0 ) {
+			glDeleteTextures( 1, &texId );
+		}
+	}
+}
+
+void CModelGeo::initMaterials( const aiScene* t_aiScene ) {
+	if( !t_aiScene ) return;
+
+	// textures
+	_textureMap.clear();
+	initTextures( t_aiScene, _textureMap );
+
+	// materials
+	for( uint i = 0; i < t_aiScene->mNumMaterials; i++ ) {
+		const aiMaterial* material = t_aiScene->mMaterials[i];
+		SMaterial mtl;
+		mtl.InitMaterial( material, _textureMap );
+		_materials.push_back( mtl );
+	}
+}
+
+void CModelGeo::initMeshes( const aiScene* t_aiScene ) {
+	if( !t_aiScene ) return;
+
+	// mesh
+	_meshes.clear();
+
+	SBoundBox bounds;
+	for( unsigned int i = 0; i < t_aiScene->mNumMeshes; ++i ) {
+		const aiMesh* assMesh = t_aiScene->mMeshes[i];
+		SMesh mesh;
+		mesh.InitMesh( assMesh, _unified );
+		_meshes.push_back( mesh );
+
+		bounds.SetBounds( mesh._bounds );
+	}
+
+	_boundBox = bounds;
+
+	if( _unified ) {
+		vec3 adjustedTranslate = -bounds._center;
+		float adjustedScale = 2.f / bounds.GetLongestSide();
+
+		mat4 scaleMat = mat4( vec4( adjustedScale, 0.f, 0.f, 0.f ),
+							  vec4( 0.f, adjustedScale, 0.f, 0.f ),
+							  vec4( 0.f, 0.f, adjustedScale, 0.f ),
+							  vec4( 0.f, 0.f, 0.f, 1.f ) );
+
+		mat4 translateMat = mat4( vec4( 1.f, 0.f, 0.f, 0.f ),
+								  vec4( 0.f, 1.f, 0.f, 0.f ),
+								  vec4( 0.f, 0.f, 1.f, 0.f ),
+								  vec4( adjustedTranslate, 1.f ) );
+
+		// translate the model first to center and then scale
+		_preprocessModelMatrix = _preprocessModelMatrix * scaleMat * translateMat;
+		_boundBox.Translate( adjustedTranslate );
+		_boundBox.Scale( adjustedScale );
+	}
+
+	_boundBox.Validate();
 }
 
 bool CModelGeo::initModel() {
@@ -558,42 +796,9 @@ bool CModelGeo::initModel() {
         LogMsg << "   " << scene->mNumTextures << " textures" << LogEndl;
     }
 
-	// mesh
-	_meshes.clear();
 
-	SBoundBox bounds;
-	for( unsigned int i = 0; i < scene->mNumMeshes; ++i ) {
-		const aiMesh* assMesh = scene->mMeshes[i];
-		SMesh mesh;
-		mesh.InitMesh( assMesh, _unified );
-		_meshes.push_back( mesh );
-
-		bounds.SetBounds( mesh._bounds );
-	}
-
-	_boundBox = bounds;
-
-	if( _unified ) {
-		vec3 adjustedTranslate = -bounds._center;
-		float adjustedScale = 2.f / bounds.GetLongestSide();
-
-		mat4 scaleMat = mat4( vec4( adjustedScale, 0.f, 0.f, 0.f ),
-			vec4( 0.f, adjustedScale, 0.f, 0.f ),
-			vec4( 0.f, 0.f, adjustedScale, 0.f ),
-			vec4( 0.f, 0.f, 0.f, 1.f ) );
-
-		mat4 translateMat = mat4( vec4( 1.f, 0.f, 0.f, 0.f ),
-			vec4( 0.f, 1.f, 0.f, 0.f ),
-			vec4( 0.f, 0.f, 1.f, 0.f ),
-			vec4( adjustedTranslate, 1.f ) );
-
-		// translate the model first to center and then scale
-		_preprocessModelMatrix = _preprocessModelMatrix * scaleMat * translateMat;
-		_boundBox.Translate( adjustedTranslate );
-		_boundBox.Scale( adjustedScale );
-	}
-
-	_boundBox.Validate();
+	initMeshes( scene );
+	initMaterials( scene );
 
 	_inited = true;
 	return _inited;
@@ -601,9 +806,16 @@ bool CModelGeo::initModel() {
 
 void CModelGeo::deinitModel() {
 	if( !_inited ) return;
+	// deinit mesh
 	for( unsigned int i = 0; i < _meshes.size(); ++i ) {
 		_meshes[i].DeinitMesh();
 	}
+	// deinit material
+	for( unsigned int i = 0; i < _materials.size(); ++i ) {
+		_materials[i].DeinitMaterial();
+	}
+	// free textures
+	deinitTextures();
 
 	CGeo::deinitModel();
 
@@ -620,8 +832,12 @@ void CModelGeo::DrawModel( CShader* t_shader, CMaterial* t_material, const mat4&
 }
 
 
-// geo container
 
+/////////////////////////////////////////////////////////////////
+//
+// Geo Container
+//  
+/////////////////////////////////////////////////////////////////
 CGeoContainer::CGeoContainer() : _inited( false ) {
 	for( us i = 0; i < GEO_COUNTER; ++i ) {
 		_geos[i] = 0;

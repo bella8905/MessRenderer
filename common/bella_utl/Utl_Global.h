@@ -21,6 +21,7 @@ using std::string;
 
 typedef unsigned short us;
 typedef unsigned long ul;
+typedef unsigned int uint;
 
 namespace Utl {
 

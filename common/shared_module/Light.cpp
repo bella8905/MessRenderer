@@ -20,5 +20,12 @@ void CLight::Setup( const vec3& t_pos, const vec3& t_ls, const vec3& t_ld, const
 	_la = t_la;
 }
 
+void CLight::PopulateUBOData( SLIGHTING_UBO_DATA& t_uboData ) {
+	t_uboData._la = Utl::ToDirection( _la );
+	t_uboData._ld = Utl::ToDirection( _ld );
+	t_uboData._ls = Utl::ToDirection( _ls );
+	t_uboData._lightPosInWorld = _pos;
+}
+
 
 CLight g_simpleLight;

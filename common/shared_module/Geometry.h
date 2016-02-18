@@ -21,6 +21,7 @@
 #include "Utl_Include.h"
 #include "Material.h"
 #include "Shader.h"
+#include <unordered_map>
 
 using std::vector;
 using std::string;
@@ -282,12 +283,10 @@ public:
 		// this will save more space than create a vertext struct and transport all things to GPU
 		// for sometimes we don't have texcoords or color for a vertex
         // vertex buffers
+		// we actually only need the vao to keep track of all buffers.
+		// TODO: REMOVE BUFFER IDS LATER
 		GLuint _vao, _vbo, _nbo, _tbo, _ibo;
-        // texture id
-        // it's possible we have multiple textures for a mesh.
-        vector<GLuint> _textureIds;
-        // mtl ubo 
-        GLuint _mtl_ubo;
+		us _mtlIdx;
 		bool _hasTex, _hasFaces;
 		bool _inited;
 		SBoundBox _bounds;
@@ -302,16 +301,61 @@ public:
 		void DrawMesh();
 	};
 
+	struct SMaterial {
+		// texture id
+		// it's possible we have multiple textures for a mesh.
+		vector<GLuint> _textureIds;
+		// mtl ubo 
+		GLuint _mtl_ubo;
+
+		SMaterial() : _mtl_ubo(0) {}
+		void InitMaterial( const aiMaterial* t_aiMaterial, const std::unordered_map<std::string, GLuint>& t_textureMap );
+		void DeinitMaterial();
+	};
+
 protected:
     static bool _bDumpSceneInfo;
 
 	string _fileName;
 	vector<SMesh> _meshes;
+	vector<SMaterial> _materials;
+	std::unordered_map<std::string, GLuint> _textureMap;
+
 	bool _unified;       // if the model is scaled to fit a unit cube
 
 protected:
 	bool initModel();
 	void deinitModel();
+	///////////////////////////////////////////////////////////////////////////////////
+	// 
+	// init and load all textures in model
+	// texture with the same path is only stored and loaded once
+	// all loaded texture id will be stored in textureMap
+	// 
+	///////////////////////////////////////////////////////////////////////////////////
+	void initTextures( const aiScene* t_aiScene, std::unordered_map<std::string, GLuint>& t_textureMap );
+	void deinitTextures();
+	///////////////////////////////////////////////////////////////////////////////////
+	// 
+	// populate all materials 
+	// this will generate a material ubo for each material,
+	// and also assign texture id for each material, which is loaded with initTextures().
+	// 
+	///////////////////////////////////////////////////////////////////////////////////
+	void initMaterials( const aiScene* t_aiScene );
+	///////////////////////////////////////////////////////////////////////////////////
+	// 
+	// populate data for each mesh 
+	// this will generate all vertex buffers for meshes
+	// 
+	///////////////////////////////////////////////////////////////////////////////////
+	void initMeshes( const aiScene* t_aiScene );
+	///////////////////////////////////////////////////////////////////////////////////
+	// 
+	// find image path
+	// 
+	///////////////////////////////////////////////////////////////////////////////////
+	bool findImagePath( std::string t_imagePath, std::string& t_out );
 
 public:
 	virtual void DrawModel( CShader* t_shader, CMaterial* t_material, const mat4& t_modelMatrix, bool t_drawBB );

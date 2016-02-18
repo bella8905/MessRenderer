@@ -18,13 +18,14 @@
 
 namespace Utl {
 
-    void GL_LoadImage( GLuint& t_texture, const char* t_imageFileName, GLenum t_target ) {
+	bool GL_LoadImage( GLuint& t_texture, const char* t_imageFileName, GLenum t_target ) {
 
         int width, height;
         int forceChannels = 4;
         unsigned char* imageData = stbi_load( t_imageFileName, &width, &height, 0, forceChannels );
         if( !imageData ) {
             LogError << "couldn't load " << t_imageFileName << LogEndl;
+			return false;
         }
 
         // check for wonky texture dimensions
@@ -91,6 +92,8 @@ namespace Utl {
 
         // free memory
         stbi_image_free( imageData );
+
+		return true;
     }
 
 

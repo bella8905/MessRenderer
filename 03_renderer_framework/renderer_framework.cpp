@@ -101,7 +101,7 @@ void CTestApp::_setupScene() {
 	obj_cube.SetShader( SD_NORMAL_TEST );
 	_scene.AddObj( obj_cube );
 
-	CObj obj_sphere( GEO_UNIT_SPHERE );
+	CObj obj_sphere( GEO_SPIDER );
 	// obj_sphere._material = blinnMat;
 	obj_sphere.SetupModelMatrix( translate_right, rot_noRot, scale_xs );
 	obj_sphere.SetShader( SD_PHONG );

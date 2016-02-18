@@ -19,7 +19,7 @@ namespace Utl {
     // and return the texture unit.
     //
     /////////////////////////////////////////////////////////////////
-    void GL_LoadImage( GLuint& t_texture, const char* t_imageFile, GLenum t_target = GL_TEXTURE_2D );
+    bool GL_LoadImage( GLuint& t_texture, const char* t_imageFile, GLenum t_target = GL_TEXTURE_2D );
 
     /*
     /////////////////////////////////////////////////////////////////

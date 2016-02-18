@@ -216,6 +216,7 @@ public:
 
 protected:
     virtual void onInitMVPShader();
+	virtual void onDeinitMVPShader();
 	CAreaCountingShader* _areaCountingShader;
 	GLuint _area_uniform_buffer;
 
@@ -240,16 +241,11 @@ protected:
 	CLight* _light;
 
 	GLuint _lighting_ubo;
-
-	struct SLIGHTING {
-		vec3 _lightPosInWorld;
-		float _splExp;
-		vec4 _ls, _ld, _la;
-		vec4 _ks, _kd, _ka;
-	};
+	GLuint _mtl_ubo;
 
 protected:
     virtual void onInitMVPShader();
+	virtual void onDeinitMVPShader();
 
 public:
 	void BindShaderWithObjectForDrawing( CGeo* t_object, CMaterial* t_material, const mat4& t_transform );

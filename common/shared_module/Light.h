@@ -26,6 +26,13 @@ protected:
 	vec3 _la;     // ambient light color
 
 public:
+	// for ubo
+	struct SLIGHTING_UBO_DATA {
+		vec3 _lightPosInWorld;
+		float _pading1;
+		vec4 _ls, _ld, _la;
+	};
+
 	void Setup( const vec3& t_pos, const vec3& t_ls, const vec3& t_ld, const vec3& t_la );
 	vec3& GetPos() { return _pos; }
 	void SetPos( const vec3& t_val ) { _pos = t_val; }
@@ -35,6 +42,7 @@ public:
 	void SetLd( const vec3& t_val ) { _ld = t_val; }
 	vec3& GetLs() { return _ls; }
 	void SetLs( const vec3& t_val ) { _ls = t_val; }
+	void PopulateUBOData( SLIGHTING_UBO_DATA& t_uboData );
 };
 
 extern CLight g_simpleLight;
