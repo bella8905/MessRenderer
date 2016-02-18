@@ -75,6 +75,17 @@ public:
         glActiveTexture( GL_TEXTURE1 );
         Utl::GL_LoadImage( _texture, t_imageFileName );
 
+		glBindTexture( GL_TEXTURE_2D, _texture );
+		// wrapping
+		glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_BORDER );
+		glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_BORDER );
+		// filtering
+		glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST );
+		glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST );
+		// border
+		float color[4] = { 0.5f, 0.5f, 0.5f, 1.f };
+		glTexParameterfv( GL_TEXTURE_2D, GL_TEXTURE_BORDER_COLOR, color );
+		
 	}
 
 	void ScaleImage( float t_delta ) {
@@ -179,6 +190,8 @@ void CRenderer::_startup() {
     _textureViewerSD = new CTextureViewerSD();
 	const char* defaultImage = "../../common/textures/skulluvmap.png";
 	_textureViewerSD->LoadImage( defaultImage );
+
+
 
     glGenVertexArrays(1, &_vao);
 }
