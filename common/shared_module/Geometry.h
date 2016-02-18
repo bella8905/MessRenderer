@@ -178,9 +178,14 @@ public:
 	static void DeinitBoundBox();
 };
 
+
 struct SVertex {
 	vec3 _pos;
 	vec3 _normal;
+
+    // texcoords
+    // tangents
+    // bitangents
 
 	SVertex( const vec3& t_pos, const vec3& t_normal ) : _pos( t_pos ), _normal( t_normal ) {}
 };
@@ -194,7 +199,7 @@ public:
 protected:
 	///////////////////////////////////////////////////////////////////////////////////
 	//
-	// vertex attributes
+	// vertex related buffers
 	// vbo, ibo, vao
 	//
 	// keep track of vao loc so we can bind it, let it remember the setups of vbo and ibo
@@ -276,7 +281,13 @@ public:
 		// generate buffer for each of the vertex attribute
 		// this will save more space than create a vertext struct and transport all things to GPU
 		// for sometimes we don't have texcoords or color for a vertex
+        // vertex buffers
 		GLuint _vao, _vbo, _nbo, _tbo, _ibo;
+        // texture id
+        // it's possible we have multiple textures for a mesh.
+        vector<GLuint> _textureIds;
+        // mtl ubo 
+        GLuint _mtl_ubo;
 		bool _hasTex, _hasFaces;
 		bool _inited;
 		SBoundBox _bounds;
@@ -292,6 +303,8 @@ public:
 	};
 
 protected:
+    static bool _bDumpSceneInfo;
+
 	string _fileName;
 	vector<SMesh> _meshes;
 	bool _unified;       // if the model is scaled to fit a unit cube

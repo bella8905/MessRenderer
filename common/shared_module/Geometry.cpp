@@ -526,6 +526,9 @@ void CModelGeo::SMesh::DrawMesh() {
 	glBindVertexArray( 0 );
 }
 
+
+bool CModelGeo::_bDumpSceneInfo = true;
+
 CModelGeo::~CModelGeo() {
 	deinitModel();
 }
@@ -544,15 +547,16 @@ bool CModelGeo::initModel() {
 		return false;
 	}
 
-	// scene processing
-	LogMsg << "***************Model loaded: " << _fileName << LogEndl;
-	LogMsg << "   " << scene->mNumAnimations << " animations" << LogEndl;
-	LogMsg << "   " << scene->mNumCameras << " cameras" << LogEndl;
-	LogMsg << "   " << scene->mNumLights << " lights" << LogEndl;
-	LogMsg << "   " << scene->mNumMaterials << " materials" << LogEndl;
-	LogMsg << "   " << scene->mNumMeshes << " meshes" << LogEndl;
-	LogMsg << "   " << scene->mNumTextures << " textures" << LogEndl;
-
+    if( _bDumpSceneInfo ) {
+        // scene processing
+        LogMsg << "***************Model loaded: " << _fileName << LogEndl;
+        LogMsg << "   " << scene->mNumAnimations << " animations" << LogEndl;
+        LogMsg << "   " << scene->mNumCameras << " cameras" << LogEndl;
+        LogMsg << "   " << scene->mNumLights << " lights" << LogEndl;
+        LogMsg << "   " << scene->mNumMaterials << " materials" << LogEndl;
+        LogMsg << "   " << scene->mNumMeshes << " meshes" << LogEndl;
+        LogMsg << "   " << scene->mNumTextures << " textures" << LogEndl;
+    }
 
 	// mesh
 	_meshes.clear();
