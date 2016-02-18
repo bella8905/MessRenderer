@@ -222,7 +222,7 @@ void CRenderer::_onKey( int t_key, int t_action, int t_mods ) {
 	if( t_key == GLFW_KEY_SPACE && t_action == GLFW_PRESS ) {
 		Utl::CFileBrowserDialog fileBrowser;
 		// filtering image files
-		fileBrowser._filter = "png files(*.png)\0*.png\0jpg files(*.jpg)\0*.jpg\0\0";
+		fileBrowser._filter = "All(*.*)\0*.*\0png files(*.png)\0*.png\0jpg files(*.jpg)\0*.jpg\0\0";
 		if( fileBrowser.ShowDialog() ) {
 			_textureViewerSD->LoadImage( fileBrowser._fileName );
 		}
