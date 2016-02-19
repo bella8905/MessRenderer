@@ -215,6 +215,7 @@ void CRenderer::_shutdown() {
     glDeleteVertexArrays( 1, &_vao );
     if( _textureViewerSD ) {
         delete _textureViewerSD;
+		_textureViewerSD = 0;
     }
 }
 

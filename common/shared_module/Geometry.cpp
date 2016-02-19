@@ -196,7 +196,7 @@ void CPrimGeo::DrawModel( CShader* t_shader, CMaterial* t_material, const mat4& 
 }
 
 
-void CPrimGeo::genBufferData( const vector<SVertex>& t_vertices, const vector<GLuint>& t_indices ) {
+void CPrimGeo::genBufferData( const vector<SVertex_Simple>& t_vertices, const vector<GLuint>& t_indices ) {
 
 	// generate vao, vbo, ibo
 	glGenVertexArrays( 1, &_vao );
@@ -205,9 +205,9 @@ void CPrimGeo::genBufferData( const vector<SVertex>& t_vertices, const vector<GL
 	// vbo
 	glGenBuffers( 1, &_vbo );
 	glBindBuffer( GL_ARRAY_BUFFER, _vbo );
-	glBufferData( GL_ARRAY_BUFFER, sizeof( SVertex ) * t_vertices.size(), &t_vertices[0], GL_STATIC_DRAW );
-	glVertexAttribPointer( 0, 3, GL_FLOAT, GL_FALSE, sizeof( SVertex ), ( void* )offsetof( SVertex, _pos ) );
-	glVertexAttribPointer( 1, 3, GL_FLOAT, GL_FALSE, sizeof( SVertex ), ( void* )offsetof( SVertex, _normal ) );
+	glBufferData( GL_ARRAY_BUFFER, sizeof( SVertex_Simple ) * t_vertices.size(), &t_vertices[0], GL_STATIC_DRAW );
+	glVertexAttribPointer( 0, 3, GL_FLOAT, GL_FALSE, sizeof( SVertex_Simple ), ( void* )offsetof( SVertex_Simple, _pos ) );
+	glVertexAttribPointer( 1, 3, GL_FLOAT, GL_FALSE, sizeof( SVertex_Simple ), ( void* )offsetof( SVertex_Simple, _normal ) );
 	glEnableVertexAttribArray( 0 );
 	glEnableVertexAttribArray( 1 );
 
@@ -233,18 +233,18 @@ bool CTriangleGeo::initModel() {
 	// if obj is already inited, simply return
 	if( CPrimGeo::initModel() ) return true;
 
-	vector<SVertex> vertices;
+	vector<SVertex_Simple> vertices;
 	vec3 point = vec3( 0.0f, 0.5f, 0.0f );
 	vec3 normal = vec3( 0.f, 0.f, 1.f );
-	vertices.push_back( SVertex( point, normal ) );
+	vertices.push_back( SVertex_Simple( point, normal ) );
 	_boundBox.SetBounds( point );
 
 	point = vec3( -0.5f, -0.5f, 0.0f );
-	vertices.push_back( SVertex( point, normal ) );
+	vertices.push_back( SVertex_Simple( point, normal ) );
 	_boundBox.SetBounds( point );
 
 	point = vec3( 0.5f, -0.5f, 0.0f );
-	vertices.push_back( SVertex( point, normal ) );
+	vertices.push_back( SVertex_Simple( point, normal ) );
 	_boundBox.SetBounds( point );
 
 	// give bb a little thickness
@@ -303,10 +303,10 @@ bool CUnitCubeGeo::initModel() {
 
 	int numOfVertices = sizeof( cubeVertices ) / sizeof( float ) / 3;
 
-	vector<SVertex> vertices;
+	vector<SVertex_Simple> vertices;
 	for( int i = 0; i < numOfVertices; ++i ) {
 		int startIndex = 3 * i;
-		vertices.push_back( SVertex( vec3( cubeVertices[startIndex], cubeVertices[startIndex + 1], cubeVertices[startIndex + 2] ),
+		vertices.push_back( SVertex_Simple( vec3( cubeVertices[startIndex], cubeVertices[startIndex + 1], cubeVertices[startIndex + 2] ),
 			vec3( cubeNormals[startIndex], cubeNormals[startIndex + 1], cubeNormals[startIndex + 2] ) ) );
 
 		_boundBox.SetBounds( vec3( cubeVertices[startIndex], cubeVertices[startIndex + 1], cubeVertices[startIndex + 2] ) );
@@ -343,7 +343,7 @@ bool CUnitSphereGeo::initModel() {
 	if( CPrimGeo::initModel() ) return true;
 
 	vector<GLuint> indices;
-	vector<SVertex> vertices;
+	vector<SVertex_Simple> vertices;
 
 	int numLatSeg = 10;
 	int numLongSeg = 10;
@@ -381,27 +381,27 @@ bool CUnitSphereGeo::initModel() {
 			indices.push_back( index++ );
 
 			// 0 
-			vertices.push_back( SVertex( vec3( x00, y0, z00 ), vec3( x00, y0, z00 ) ) );
+			vertices.push_back( SVertex_Simple( vec3( x00, y0, z00 ), vec3( x00, y0, z00 ) ) );
 			_boundBox.SetBounds( vec3( x00, y0, z00 ) );
 
 			// 1
-			vertices.push_back( SVertex( vec3( x10, y1, z10 ), vec3( x10, y1, z10 ) ) );
+			vertices.push_back( SVertex_Simple( vec3( x10, y1, z10 ), vec3( x10, y1, z10 ) ) );
 			_boundBox.SetBounds( vec3( x10, y1, z10 ) );
 
 			// 2
-			vertices.push_back( SVertex( vec3( x11, y1, z11 ), vec3( x11, y1, z11 ) ) );
+			vertices.push_back( SVertex_Simple( vec3( x11, y1, z11 ), vec3( x11, y1, z11 ) ) );
 			_boundBox.SetBounds( vec3( x11, y1, z11 ) );
 
 			// 0
-			vertices.push_back( SVertex( vec3( x00, y0, z00 ), vec3( x00, y0, z00 ) ) );
+			vertices.push_back( SVertex_Simple( vec3( x00, y0, z00 ), vec3( x00, y0, z00 ) ) );
 			_boundBox.SetBounds( vec3( x00, y0, z00 ) );
 
 			// 2
-			vertices.push_back( SVertex( vec3( x11, y1, z11 ), vec3( x11, y1, z11 ) ) );
+			vertices.push_back( SVertex_Simple( vec3( x11, y1, z11 ), vec3( x11, y1, z11 ) ) );
 			_boundBox.SetBounds( vec3( x11, y1, z11 ) );
 
 			// 3
-			vertices.push_back( SVertex( vec3( x01, y0, z01 ), vec3( x01, y0, z01 ) ) );
+			vertices.push_back( SVertex_Simple( vec3( x01, y0, z01 ), vec3( x01, y0, z01 ) ) );
 			_boundBox.SetBounds( vec3( x01, y0, z01 ) );
 		}
 	}
@@ -483,7 +483,7 @@ void CModelGeo::SMesh::InitMesh( const aiMesh* t_aiMesh, bool t_unified ) {
 
 	// tbo
 	// a vertex can have a number of textures bound. 
-	// we are only using the first one
+	// we are only using the first one, for now
 	if( _hasTex ) {
 		vector<GLfloat> texcoords;
 		for( int i = 0; i < numOfVertices; ++i ) {
@@ -495,7 +495,7 @@ void CModelGeo::SMesh::InitMesh( const aiMesh* t_aiMesh, bool t_unified ) {
 		glGenBuffers( 1, &_tbo );
 		glBindBuffer( GL_ARRAY_BUFFER, _tbo );
 		glBufferData( GL_ARRAY_BUFFER, 2 * numOfVertices * sizeof( GLfloat ), &texcoords[0], GL_STATIC_DRAW );
-		glVertexAttribPointer( 2, 3, GL_FLOAT, GL_FALSE, 0, NULL );
+		glVertexAttribPointer( 2, 2, GL_FLOAT, GL_FALSE, 0, NULL );
 		glBindBuffer( GL_ARRAY_BUFFER, 0 );
 
 
@@ -517,11 +517,11 @@ void CModelGeo::SMesh::InitMesh( const aiMesh* t_aiMesh, bool t_unified ) {
 	glGenBuffers( 1, &_ibo );
 	glBindBuffer( GL_ELEMENT_ARRAY_BUFFER, _ibo );
 	glBufferData( GL_ELEMENT_ARRAY_BUFFER, _numOfIndices * sizeof( GLuint ), &indices[0], GL_STATIC_DRAW );
+
+	glBindVertexArray( 0 );
 	glBindBuffer( GL_ELEMENT_ARRAY_BUFFER, 0 );
 
 	/*    }*/
-
-	glBindVertexArray( 0 );
 
 	_inited = true;
 }
@@ -551,10 +551,24 @@ void CModelGeo::SMesh::DrawMesh() {
 	if( !_inited ) return;
 
 	glBindVertexArray( _vao );
-	glBindBuffer( GL_ELEMENT_ARRAY_BUFFER, _ibo );
+
+	// textures
+	// use the first texture for now, if it exists
+	GLuint texId = 0;
+	if( _parent ) {
+		CModelGeo::SMaterial* mtl = _parent->GetMaterial( _mtlIdx );
+		if( mtl ) {
+			texId = mtl->GetDiffuseTexture( 0 );
+		}
+	}
+
+	if( texId > 0 ) {
+		glBindTexture( GL_TEXTURE_2D, texId );
+	}
+
 	glDrawElements( GL_TRIANGLES, _numOfIndices, GL_UNSIGNED_INT, NULL );
-	glBindBuffer( GL_ELEMENT_ARRAY_BUFFER, 0 );
 	glBindVertexArray( 0 );
+
 }
 
 
@@ -632,6 +646,11 @@ void CModelGeo::SMaterial::DeinitMaterial() {
 	}
 }
 
+GLuint CModelGeo::SMaterial::GetDiffuseTexture( uint t_texIdx ) {
+	if( t_texIdx >= _textureIds.size() ) return 0;
+	return _textureIds[t_texIdx];
+}
+
 
 /////////////////////////////////////////////////////////////////
 //
@@ -672,6 +691,11 @@ bool CModelGeo::findImagePath( std::string t_imagePath, std::string& t_out ) {
 
 	return false;
 
+}
+
+CModelGeo::SMaterial* CModelGeo::GetMaterial( uint t_mtlIdx ) {
+	if( t_mtlIdx >= _materials.size() ) return 0;
+	return &_materials[t_mtlIdx];
 }
 
 void CModelGeo::initTextures( const aiScene* t_aiScene, std::unordered_map<std::string, GLuint>& t_textureMap ) {
@@ -739,7 +763,7 @@ void CModelGeo::initMeshes( const aiScene* t_aiScene ) {
 	SBoundBox bounds;
 	for( unsigned int i = 0; i < t_aiScene->mNumMeshes; ++i ) {
 		const aiMesh* assMesh = t_aiScene->mMeshes[i];
-		SMesh mesh;
+		SMesh mesh( this );
 		mesh.InitMesh( assMesh, _unified );
 		_meshes.push_back( mesh );
 

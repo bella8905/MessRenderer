@@ -37,7 +37,12 @@ enum GEO_TYPE {
 	GEO_COUNTER
 };
 
-// aabb
+
+/////////////////////////////////////////////////////////////////
+//
+//  Geo aabb
+//  
+/////////////////////////////////////////////////////////////////
 struct SBoundBox {
 	vec3 _min, _max;
 	vec3 _sideLentghs;
@@ -137,6 +142,11 @@ struct SBoundBox {
 
 
 
+/////////////////////////////////////////////////////////////////
+//
+//  Geo Base
+//  
+/////////////////////////////////////////////////////////////////
 class CGeo {
 public:
 	CGeo();
@@ -145,14 +155,22 @@ public:
 protected:
 	bool _inited;
 
+
+	/////////////////////////////////////////////////////////////////
+	//
 	// a preprocessed model matrix, 
 	// this is for transforming the model to a more meaningful status
 	// for example, transforming a reading-in model to fit in a unit cube
 	// never change it.
+	//  
+	/////////////////////////////////////////////////////////////////
 	glm::mat4 _preprocessModelMatrix;
-
+	/////////////////////////////////////////////////////////////////
+	//
 	// bound box is use to define the boundaries of the object,
 	// used for ray based object picking
+	//  
+	/////////////////////////////////////////////////////////////////
 	SBoundBox _boundBox;        // bound box when we haven't done any transformation( passed in model matrix is identical )
 	// bool _drawBoundBox;
 
@@ -177,18 +195,6 @@ public:
 	// init / deinit boundbox buffers, only do it once
 	static void InitBoundBox();
 	static void DeinitBoundBox();
-};
-
-
-struct SVertex {
-	vec3 _pos;
-	vec3 _normal;
-
-    // texcoords
-    // tangents
-    // bitangents
-
-	SVertex( const vec3& t_pos, const vec3& t_normal ) : _pos( t_pos ), _normal( t_normal ) {}
 };
 
 
@@ -224,10 +230,30 @@ protected:
 	int _numOfIndices;
 
 protected:
+	/////////////////////////////////////////////////////////////////
+	//
+	// a simple vertex struct for prim geos
+	// it only contains very basic data for vertex position and normal.
+	// the prim geos don't have any texture bound.
+	// the data is calculated instead of read from a model file.
+	//  
+	/////////////////////////////////////////////////////////////////
+	struct SVertex_Simple {
+		vec3 _pos;
+		vec3 _normal;
+
+		// texcoords
+		// tangents
+		// bitangents
+
+		SVertex_Simple( const vec3& t_pos, const vec3& t_normal ) : _pos( t_pos ), _normal( t_normal ) {}
+	};
+
+
 	virtual bool initModel() = 0;
 	void deinitModel();
 
-	void genBufferData( const vector<SVertex>& t_vertices, const vector<GLuint>& t_indices );
+	void genBufferData( const vector<SVertex_Simple>& t_vertices, const vector<GLuint>& t_indices );
 
 public:
 	virtual void DrawModel( CShader* t_shader, CMaterial* t_material, const mat4& t_modelMatrix, bool t_drawBB );
@@ -275,6 +301,7 @@ public:
 
 
 	struct SMesh {
+		CModelGeo* _parent;
 		// don't have reference to ass scene, the scene is already freed at mesh destructor time
 		// const aiMesh* _aiMesh;
 		int _numOfIndices;
@@ -291,7 +318,7 @@ public:
 		bool _inited;
 		SBoundBox _bounds;
 
-		SMesh() : _inited( false ), _numOfIndices( 0 ),
+		SMesh( CModelGeo* t_parent ) : _parent( t_parent ), _inited( false ), _numOfIndices( 0 ),
 			_vao( 0 ), _vbo( 0 ), _nbo( 0 ), _tbo( 0 ), _ibo( 0 ),
 			_hasTex( false ), _hasFaces( false ) {
 		}
@@ -311,6 +338,7 @@ public:
 		SMaterial() : _mtl_ubo(0) {}
 		void InitMaterial( const aiMaterial* t_aiMaterial, const std::unordered_map<std::string, GLuint>& t_textureMap );
 		void DeinitMaterial();
+		GLuint GetDiffuseTexture( uint t_texIdx );
 	};
 
 protected:
@@ -356,6 +384,8 @@ protected:
 	// 
 	///////////////////////////////////////////////////////////////////////////////////
 	bool findImagePath( std::string t_imagePath, std::string& t_out );
+
+	SMaterial* GetMaterial( uint t_mtlIdx );
 
 public:
 	virtual void DrawModel( CShader* t_shader, CMaterial* t_material, const mat4& t_modelMatrix, bool t_drawBB );
