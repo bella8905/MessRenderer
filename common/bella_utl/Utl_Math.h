@@ -74,15 +74,15 @@ namespace Utl {
 	//
 	/////////////////////////////////////////////////////////////////
 	/////////////////////////////////////////////////////////////////
-	extern mat4 ToMat4( const mat3& t_mat );
-	extern mat3 ToMat3( const mat4& t_mat );
+	extern mat4 Matrix_ToMat4( const mat3& t_mat );
+	extern mat3 Matrix_ToMat3( const mat4& t_mat );
 
 	/////////////////////////////////////////////////////////////////
 	//
 	// get transform matrix from translate, rotate and scale
 	//
 	/////////////////////////////////////////////////////////////////
-	extern mat4 GetTransformMatrixFromTranslateRotateScale( const vec3& t_Trans, const vec3& t_Rotat, const vec3& t_Scale );
+	extern mat4 Matrix_GetTransformMatrixFromTranslateRotateScale( const vec3& t_Trans, const vec3& t_Rotat, const vec3& t_Scale );
 
 	/////////////////////////////////////////////////////////////////
 	// belows are only for affine transformations
@@ -91,24 +91,24 @@ namespace Utl {
 	// get translation from transform matrix
 	//
 	/////////////////////////////////////////////////////////////////
-	extern void GetTranslation( const mat4& t_transform, vec3& t_out );
-	extern void GetTranslation( const mat4& t_transform, mat4& t_out );
+	extern void Matrix_GetTranslation( const mat4& t_transform, vec3& t_out );
+	extern void Matrix_GetTranslation( const mat4& t_transform, mat4& t_out );
 
 	/////////////////////////////////////////////////////////////////
 	//
 	// get rotation from transform matrix
 	//
 	/////////////////////////////////////////////////////////////////
-	extern void GetRotation( const mat4& t_transform, mat3& t_out );
-	extern void GetRotation( const mat4& t_transform, mat4& t_out );
+	extern void Matrix_GetRotation( const mat4& t_transform, mat3& t_out );
+	extern void Matrix_GetRotation( const mat4& t_transform, mat4& t_out );
 
 	/////////////////////////////////////////////////////////////////
 	//
 	// get scale from transform matrix
 	//
 	/////////////////////////////////////////////////////////////////
-	extern void GetScale( const mat4& t_transform, vec3& t_out );
-	extern void GetScale( const mat4& t_transform, mat4& t_out );
+	extern void Matrix_GetScale( const mat4& t_transform, vec3& t_out );
+	extern void Matrix_GetScale( const mat4& t_transform, mat4& t_out );
 
 	/////////////////////////////////////////////////////////////////
 	//
@@ -117,8 +117,14 @@ namespace Utl {
 	// this is the most common matrix we see for our engine.
 	//
 	/////////////////////////////////////////////////////////////////
-	extern mat4 GetInverseTranslationRotation( const mat4& t_transform );
+	extern mat4 Matrix_GetInverseTranslationRotation( const mat4& t_transform );
 
+    /////////////////////////////////////////////////////////////////
+    //
+    // is matrix orthonormal
+    //
+    /////////////////////////////////////////////////////////////////
+    extern bool Matrix_IsOrthonormal( const mat4& t_m, float t_engthThreshold = 0.001, float t_cosineThreshold = 0.005  );
 
 
 

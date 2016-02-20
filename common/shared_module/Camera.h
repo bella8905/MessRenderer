@@ -11,55 +11,76 @@
 #pragma once
 #include "Utl_Include.h"
 
-
+/////////////////////////////////////////////////////////////////
+//
+//  Camera Base
+//  
+/////////////////////////////////////////////////////////////////
 class CCamera {
 public:
 	CCamera();
-	virtual ~CCamera() = 0;
+	virtual ~CCamera();
 
 protected:
-	// view
-	vec3 _pos, _face, _up;
-	// proj, clip frustrum
-	float _near, _far, _FOV, _aspect;
-	mat4 _viewMat, _projMat;
+    /////////////////////////////////////////////////////////////////
+    //
+    //  camera position
+    //  
+    /////////////////////////////////////////////////////////////////
+	vec4 _pos;
+    /////////////////////////////////////////////////////////////////
+    //
+    //  camera aiming point
+    //  
+    /////////////////////////////////////////////////////////////////
+    vec4 _aim;
 
-	bool _ready;
 
 public:
-	enum CamType { SIMPLE = 0, NUM_TYPES, };
+    void Setup( const vec4& t_pos, const vec4& t_aim );
 
-public:
-	void Setup( const vec3& t_pos, const vec3& t_face, const vec3& t_up, const float& t_near, const float& t_far, const float &t_FOV, const float& t_aspect );
-
-	mat4& GetViewMat() { return _viewMat; }
-	mat4& GetProjMat() { return _projMat; }
-
-	vec3& GetPos() { return _pos; }
-
-protected:
-	void calViewMat();
-	void calProjMat();
+    vec4 GetPos() { return _pos; }
+    vec4 GetAiming() { return _aim; }
+    vec4 GetFacing() { return glm::normalize( _aim - _pos ); }
 };
 
 
-// a simple camera can move in world space 
-class CSimpleCamera : public CCamera {
+/////////////////////////////////////////////////////////////////
+//
+//  Freefly Camera
+//  
+/////////////////////////////////////////////////////////////////
+class CFreeFlyCamera : public CCamera {
 public:
-	CSimpleCamera() {}
-	~CSimpleCamera() {}
+    CFreeFlyCamera() {}
+    virtual  ~CFreeFlyCamera() {}
+
+private:
+    /////////////////////////////////////////////////////////////////
+    //
+    // control buttons
+    // 
+    // left button dragging, camera orbit, 
+    //  keep the aiming point, but orbit the camera along camera aim/position sphere
+    //  horizontal: changing latitude
+    //  vertical  : changing longitude 
+    // 
+    // right button dragging, camera pan,
+    //  keep the aiming direction, but move the camera left or right.
+    //  horizontal: pan along camera +-x
+    //  vertical  : pan along camera +-y
+    //
+    // scroll, camera zoom,
+    //  keep the aiming point and the aiming direction, move camera along camera z
+    //
+    /////////////////////////////////////////////////////////////////
+    void updateControl( float t_delta, int t_key, int t_action );
 
 public:
-	void SetPos( const vec3& t_newPos );
+    void Update( float t_delta );
+    
+
 };
 
 
 
-class CFPSCamera : public CCamera {
-public:
-	CFPSCamera() {}
-	~CFPSCamera() {}
-};
-
-
-extern CSimpleCamera g_simpleCam;

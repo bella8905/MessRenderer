@@ -48,7 +48,7 @@ void CView::updateWorld2ViewMatrix() {
     if( ( _dirtyFlags & _DIRTY_FLAG_WORLD_TO_VIEW_MATRIX ) != 0  ) {
         if( ( _dirtyFlags & _DIRTY_FLAG_VIEW_TO_WORLD_MATRIX ) == 0 ) {
             // inverse matrix
-			_world2ViewMatrix = Utl::GetInverseTranslationRotation( _view2WorldMatrix );
+			_world2ViewMatrix = Utl::Matrix_GetInverseTranslationRotation( _view2WorldMatrix );
             _dirtyFlags &= ~_DIRTY_FLAG_WORLD_TO_VIEW_MATRIX;
         } else {
 			assert( false && "World to View matrix was never set. Call a SetCamera** function first. " );
@@ -60,7 +60,7 @@ void CView::updateView2WorldMatrix() {
     if( ( _dirtyFlags & _DIRTY_FLAG_VIEW_TO_WORLD_MATRIX ) != 0  ) {
         if( ( _dirtyFlags & _DIRTY_FLAG_WORLD_TO_VIEW_MATRIX ) == 0 ) {
             // inverse matrix
-			_view2WorldMatrix = Utl::GetInverseTranslationRotation( _world2ViewMatrix );
+			_view2WorldMatrix = Utl::Matrix_GetInverseTranslationRotation( _world2ViewMatrix );
             _dirtyFlags &= ~_DIRTY_FLAG_VIEW_TO_WORLD_MATRIX;
         } else {
 			assert( false && "View to World matrix was never set. Call a SetCamera** function first. " );

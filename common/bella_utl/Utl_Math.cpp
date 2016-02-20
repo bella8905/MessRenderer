@@ -106,7 +106,7 @@ namespace Utl {
 	//
 	/////////////////////////////////////////////////////////////////
 	/////////////////////////////////////////////////////////////////
-	mat4 ToMat4( const mat3& t_rot ) {
+	mat4 Matrix_ToMat4( const mat3& t_rot ) {
 		mat4 rot(	
 					vec4( t_rot[0], 0.f ),
 					vec4( t_rot[1], 0.f ),
@@ -116,7 +116,7 @@ namespace Utl {
 		return rot;
 	}
 
-	mat3 ToMat3( const mat4& t_mat ) {
+	mat3 Matrix_ToMat3( const mat4& t_mat ) {
 		mat3 rot = mat3(	
 							vec3( t_mat[0] ),
 							vec3( t_mat[1] ),
@@ -126,7 +126,7 @@ namespace Utl {
 
 	}
 
-	mat4 GetTransformMatrixFromTranslateRotateScale( const vec3& t_Trans, const vec3& t_Rotat, const vec3& t_Scale ) {
+	mat4 Matrix_GetTransformMatrixFromTranslateRotateScale( const vec3& t_Trans, const vec3& t_Rotat, const vec3& t_Scale ) {
 		mat4 translationMat = glm::translate( t_Trans );
 		mat4 rotationMat = glm::rotate( t_Rotat.x, glm::vec3( 1.f, 0.f, 0.f ) );
 		rotationMat = rotationMat*glm::rotate( glm::mat4(), t_Rotat.y, glm::vec3( 0.f, 1.f, 0.f ) );
@@ -136,13 +136,13 @@ namespace Utl {
 	}
 	
 
-	mat4 GetInverseTranslationRotation( const mat4& t_transform ) {
-		mat3 rot = ToMat3( t_transform );
+	mat4 Matrix_GetInverseTranslationRotation( const mat4& t_transform ) {
+		mat3 rot = Matrix_ToMat3( t_transform );
 		mat3 inv_rot = glm::transpose( rot );
 		vec3 translate;
-		GetTranslation( t_transform, translate );
+		Matrix_GetTranslation( t_transform, translate );
 
-		mat4 result = ToMat4( inv_rot );
+		mat4 result = Matrix_ToMat4( inv_rot );
 		result[3][0] = -result[0][0] * translate[0] - -result[1][0] * translate[1] - result[2][0] * translate[2];
 		result[3][1] = -result[0][1] * translate[0] - -result[1][1] * translate[1] - result[2][1] * translate[2];
 		result[3][2] = -result[0][2] * translate[0] - -result[1][2] * translate[1] - result[2][2] * translate[2];
@@ -150,46 +150,64 @@ namespace Utl {
 		return result;
 	}
 
+    bool Matrix_IsOrthonormal( const mat4& t_m, float t_lengthThreshold, float t_cosineThreshold ) {
+        float len0 = glm::length( t_m[0] );
+        float len1 = glm::length( t_m[1] );
+        float len2 = glm::length( t_m[2] );
+        float dot0 = glm::dot( t_m[0],  t_m[1] );
+        float dot1 = glm::dot( t_m[1],  t_m[2] );
+        float dot2 = glm::dot( t_m[2],  t_m[0] );
+        return
+            Equals( t_m[3][3], 1.0 ) &&                                                            //m33 must be exactly 1.0
+            Equals( t_m[0][3], 0.0 ) && Equals( t_m[1][3], 0.0 ) && Equals( t_m[2][3], 0.0 ) &&    //m03, m13 and m23 must be exactly 0.0
+            abs( len0 - 1.0 ) <= t_lengthThreshold &&                                           //the length of each rotation row must be unit.
+            abs( len1 - 1.0 ) <= t_lengthThreshold &&                                           //the length of each rotation row must be unit.
+            abs( len2 - 1.0 ) <= t_lengthThreshold &&                                           //the length of each rotation row must be unit.
+            abs( dot0 ) <= t_cosineThreshold &&                                                 //the angle between each rotation row must be 90 degrees.
+            abs( dot1 ) <= t_cosineThreshold &&                                                 //the angle between each rotation row must be 90 degrees.
+            abs( dot2 ) <= t_cosineThreshold;
+    }
+
 
 
 	// only for affine transformation
-	void GetTranslation( const mat4& t_transform, vec3& t_out ) {
+	void Matrix_GetTranslation( const mat4& t_transform, vec3& t_out ) {
 		t_out = vec3( t_transform[3][0], t_transform[3][1], t_transform[3][2] );
 	}
 
-	void GetTranslation( const mat4& t_transform, mat4& t_out ) {
+	void Matrix_GetTranslation( const mat4& t_transform, mat4& t_out ) {
 		t_out = mat4();
 		t_out[3] = t_transform[3];
 	}
 
 
-	void GetRotation( const mat4& t_transform, mat3& t_out ) {
+	void Matrix_GetRotation( const mat4& t_transform, mat3& t_out ) {
 		vec3 scale;
-		GetScale( t_transform, scale );
-		mat3 rotScale = ToMat3( t_transform );
+		Matrix_GetScale( t_transform, scale );
+		mat3 rotScale = Matrix_ToMat3( t_transform );
 		t_out = mat3( rotScale[0] / scale[0],
 					  rotScale[1] / scale[1],
 					  rotScale[2] / scale[2]
 					  );
 	}
 
-	void GetRotation( const mat4& t_transform, mat4& t_out ) {
+	void Matrix_GetRotation( const mat4& t_transform, mat4& t_out ) {
 		mat3 rot;
-		GetRotation( t_transform, rot );
-		t_out = ToMat4( rot );
+		Matrix_GetRotation( t_transform, rot );
+		t_out = Matrix_ToMat4( rot );
 	}
 
 
-	void GetScale( const mat4& t_transform, vec3& t_out ) {
-		mat3 rotScale = ToMat3( t_transform );
+	void Matrix_GetScale( const mat4& t_transform, vec3& t_out ) {
+		mat3 rotScale = Matrix_ToMat3( t_transform );
 		t_out[0] = glm::length( rotScale[0] );
 		t_out[1] = glm::length( rotScale[1] );
 		t_out[2] = glm::length( rotScale[2] );
 	}
 
-	void GetScale( const mat4& t_transform, mat4& t_out ) {
+	void Matrix_GetScale( const mat4& t_transform, mat4& t_out ) {
 		vec3 scale;
-		GetScale( t_transform, scale );
+		Matrix_GetScale( t_transform, scale );
 		t_out = mat4( vec4( scale[0], 0.f, 0.f, 0.f ),
 					  vec4( 0.f, scale[1], 0.f, 0.f ),
 					  vec4( 0.f, 0.f, scale[2], 0.f ),
