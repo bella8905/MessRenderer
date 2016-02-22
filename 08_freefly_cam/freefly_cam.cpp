@@ -1,6 +1,6 @@
 /////////////////////////////////////////////////////////////////
 //
-//  renderer framework - main
+//  freefly camera - main
 //
 //
 //  Copyright (c) 2016 Bella Q
@@ -13,29 +13,28 @@
 #include "Light.h"
 #include "Scene.h"
 #include "View.h"
-#include "stb_image/stb_image_write.h"
-#include "assimp/scene.h"
 #include "glm/gtx/transform.hpp"
 
 #include "Utl_Include.h"
 
 #include "MessRendererApp.h"
 
-class CTestApp : public MessRenderer::CApp {
+
+class CFreeflyCamApp : public MessRenderer::CApp {
 public:
-	CTestApp() : MessRenderer::CApp( "test app" ) {}
-	~CTestApp() {}
+	CFreeflyCamApp() : MessRenderer::CApp( "Freefly Camera" ) {}
+	~CFreeflyCamApp() {}
 
 protected:
 	CScene _scene;
+	CFreeFlyCamera _freeflyCam;
+	CView _view;
 
 protected:
 	virtual void _startup();
-	virtual void _update( double t_deltaTime );
+	virtual void _updateControls( double _deltaTime );
 	virtual void _render();
 	virtual void _shutdown();
-
-	virtual void _onKeyPressed( int t_key, int t_action, int t_mods );
 
 	void _initModules();
 	void _deinitModules();
@@ -43,20 +42,17 @@ protected:
 
 };
 
-void CTestApp::_initModules() {
+void CFreeflyCamApp::_initModules() {
 	CShaderContainer::GetInstance().Init();
 	CGeoContainer::GetInstance().Init();
-	SArcball::InitArcball();
 }
 
-void CTestApp::_deinitModules() {
-	SArcball::DeinitArcball();
+void CFreeflyCamApp::_deinitModules() {
 	CGeoContainer::GetInstance().Deinit();
 	CShaderContainer::GetInstance().Deinit();
-
 }
 
-void CTestApp::_setupScene() {
+void CFreeflyCamApp::_setupScene() {
 	////////////////////////////////////////////////////////
 	// init scenes
 
@@ -64,10 +60,10 @@ void CTestApp::_setupScene() {
  	glm::vec3 camTarget( 0.f, 0.f, 0.f );
  	glm::vec3 camFace = glm::normalize( camTarget - camPos );
 
-	CView view;
-	view.SetCameraPostionFaceAndUp( Utl::ToPositon( camPos ), Utl::ToDirection( camFace ) );
-	view.SetHorizontalFieldOfView( Utl::DegToRad( 80.f ) );
-	View_SetAsActive( view );
+	_freeflyCam.Setup( Utl::ToPositon( camPos ), Utl::ToPositon( camTarget ) );
+
+// 	_view.SetCameraPostionFaceAndUp( Utl::ToPositon( camPos ), Utl::ToDirection( camFace ) );
+// 	_view.SetHorizontalFieldOfView( Utl::DegToRad( 80.f ) );
 
 	// light
 	vec3 lightPos( 0.f, 0.f, 2.f );
@@ -92,32 +88,23 @@ void CTestApp::_setupScene() {
 	vec3 translate_right( 0.8f, 0.f, 0.f );
 	glm::mat3 rot_noRot( 1.f );
 	mat4 rot_x30 = glm::rotate( glm::mat4(), 30 * Utl::g_o2Pi, glm::vec3( 1, 0, 0 ) );
+	mat4 rot_y90 = glm::rotate( glm::mat4(), 90 * Utl::g_o2Pi, glm::vec3( 0, 1, 0 ) );
 	float scale_s = 0.5f;
 	float scale_xs = 0.1f;
 
-	// cube 
-	CObj obj_cube( GEO_UNIT_CUBE );
-	obj_cube.SetupModelMatrix( translate_left, rot_x30, scale_s );
-	obj_cube.SetShader( SD_NORMAL_TEST );
-	_scene.AddObj( obj_cube );
-
-	CObj obj_sphere( GEO_SPIDER );
+	CObj obj( GEO_SPIDER );
 	// obj_sphere._material = blinnMat;
-	obj_sphere.SetupModelMatrix( translate_right, rot_noRot, scale_xs );
-	obj_sphere.SetShader( SD_PHONG );
-	_scene.AddObj( obj_sphere );
+	obj.SetupModelMatrix( translate_center, rot_x30 * rot_y90, scale_s );
+	obj.SetShader( SD_NORMAL_TEST );
+	_scene.AddObj( obj );
 
-
-	CObj obj_triangle( GEO_TRIANGLE );
-	obj_triangle.SetupModelMatrix( translate_center, rot_noRot, scale_s );
-	obj_triangle.SetShader( SD_NORMAL_TEST );
-	_scene.AddObj( obj_triangle );
 
 }
 
 
-void CTestApp::_startup() {
+void CFreeflyCamApp::_startup() {
 	_initModules();
+
 	_setupScene();
 
     glEnable( GL_DEPTH_TEST );
@@ -129,11 +116,27 @@ void CTestApp::_startup() {
 
 }
 
-void CTestApp::_update( double t_deltaTime ) {
-	
+void CFreeflyCamApp::_updateControls( double _deltaTime ) {
+// 	CApp::_updateControls( _deltaTime );
+// 
+// 	_freeflyCam.UpdateControl( _deltaTime );
+
+	if( Utl::GL_GetKeyOrMouseButtonPressed( GLFW_MOUSE_BUTTON_LEFT ) ) {
+		LogMsg << "q pressed" << LogEndl;
+	}
+
+	if( Utl::GL_GetKeyOrMouseButtonHeld( GLFW_MOUSE_BUTTON_LEFT ) ) {
+		LogMsg << "q held" << LogEndl;
+	}
+
+	if( Utl::GL_GetKeyOrMouseButtonReleased( GLFW_MOUSE_BUTTON_LEFT ) ) {
+		LogMsg << "q released" << LogEndl;
+	}
+
+
 }
 
-void CTestApp::_render() {
+void CFreeflyCamApp::_render() {
 	glClearColor( 0.5f, 0.5f, 0.5f, 1.f );
 	glClear( GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT );
 
@@ -145,17 +148,14 @@ void CTestApp::_render() {
 
 }
 
-void CTestApp::_shutdown() {
+void CFreeflyCamApp::_shutdown() {
 	_deinitModules();
-}
-
-void CTestApp::_onKeyPressed( int t_key, int t_action, int t_mods ) {
 }
 
 
 // app entry
 int main( int argc, const char ** argv ) {
-	CTestApp *app = new CTestApp();
+	CFreeflyCamApp *app = new CFreeflyCamApp();
     app->Run();                                  
 	delete app;                                     
 	return 0;                                      

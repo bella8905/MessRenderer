@@ -42,7 +42,7 @@ protected:
     virtual void _render();
     virtual void _shutdown();
 
-    virtual void _onKey( int t_key, int t_action, int t_mods );
+    virtual void _onKeyPressed( int t_key, int t_action, int t_mods );
     virtual void _onMouseScroll( double t_offset  );
 
     void _initModules();
@@ -154,7 +154,7 @@ void CRenderer::_shutdown() {
     _deinitModules();
 }
 
-void CRenderer::_onKey( int t_key, int t_action, int t_mods ) {
+void CRenderer::_onKeyPressed( int t_key, int t_action, int t_mods ) {
 }
 
 void CRenderer::_onMouseScroll( double t_offset ) {

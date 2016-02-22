@@ -158,8 +158,8 @@ namespace Utl {
         float dot1 = glm::dot( t_m[1],  t_m[2] );
         float dot2 = glm::dot( t_m[2],  t_m[0] );
         return
-            Equals( t_m[3][3], 1.0 ) &&                                                            //m33 must be exactly 1.0
-            Equals( t_m[0][3], 0.0 ) && Equals( t_m[1][3], 0.0 ) && Equals( t_m[2][3], 0.0 ) &&    //m03, m13 and m23 must be exactly 0.0
+            Equals( t_m[3][3], 1.f ) &&                                                            //m33 must be exactly 1.0
+            Equals( t_m[0][3], 0.f ) && Equals( t_m[1][3], 0.f ) && Equals( t_m[2][3], 0.f ) &&    //m03, m13 and m23 must be exactly 0.0
             abs( len0 - 1.0 ) <= t_lengthThreshold &&                                           //the length of each rotation row must be unit.
             abs( len1 - 1.0 ) <= t_lengthThreshold &&                                           //the length of each rotation row must be unit.
             abs( len2 - 1.0 ) <= t_lengthThreshold &&                                           //the length of each rotation row must be unit.

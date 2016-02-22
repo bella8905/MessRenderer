@@ -10,6 +10,7 @@
 
 #pragma once
 
+
 struct GLFWwindow;
 
 namespace MessRenderer {
@@ -55,13 +56,22 @@ namespace MessRenderer {
 		bool _isActive() { return ( _activeApp != 0 )/* && ( _activeApp == this )*/; }
 
 		/////////////////////////////////////////////////////////////////
+		/////////////////////////////////////////////////////////////////
 		//
 		//  application functions
 		//  
 		/////////////////////////////////////////////////////////////////
+		/////////////////////////////////////////////////////////////////
 		virtual void _setInfo();
 		virtual void _startup();
 		virtual void _update( double _deltaTime );
+		/////////////////////////////////////////////////////////////////
+		//
+		//  update controls, check and process inputs
+		//  this should be after GLFW events have been polled
+		//  
+		/////////////////////////////////////////////////////////////////
+		virtual void _updateControls( double _deltaTime );
 		virtual void _render();
 		virtual void _shutdown();
 
@@ -75,18 +85,19 @@ namespace MessRenderer {
 		void _logSysInfo();
 	
 
-
+		/////////////////////////////////////////////////////////////////
 		/////////////////////////////////////////////////////////////////
 		//
 		//  callbacks
 		//  
 		/////////////////////////////////////////////////////////////////
+		/////////////////////////////////////////////////////////////////
+
 		virtual void _onWindowResize( int t_w, int t_h );
-		virtual void _onKey( int t_key, int t_action, int t_mods );
-		virtual void _onMouseButton( int t_button, int t_action );
 		virtual void _onMouseMove( double t_x, double t_y );
 		virtual void _onMouseEnter( int t_bEntered );
 		virtual void _onMouseScroll( double t_offset );
+
 		virtual void _onDrop( int t_count, const char** t_paths );
 		virtual void _onError( int t_error, const char* t_desc );
 
@@ -98,10 +109,10 @@ namespace MessRenderer {
 		/////////////////////////////////////////////////////////////////
 		//	GLFWwindowsizefun
 		static void _glfw_onWindowResize( GLFWwindow* t_win, int t_w, int t_h );
-		//  GLFWkeyfun
-		static void _glfw_onKey( GLFWwindow* t_win, int t_key, int t_scancode, int t_action, int t_mods );
-		//  GLFWmousebuttonfun
-		static void _glfw_onMouseButton( GLFWwindow* t_win, int t_button, int t_action, int t_mods );
+// 		//  GLFWkeyfun
+// 		static void _glfw_onKey( GLFWwindow* t_win, int t_key, int t_scancode, int t_action, int t_mods );
+// 		//  GLFWmousebuttonfun
+// 		static void _glfw_onMouseButton( GLFWwindow* t_win, int t_button, int t_action, int t_mods );
 		//  GLFWcursorposfun
 		static void _glfw_onMouseMove( GLFWwindow* t_win, double t_x, double t_y );
 		//  GLFWcursorenterfun
@@ -130,8 +141,12 @@ namespace MessRenderer {
             t_height = (float)_info._winHeight;
         }
 
-        static CApp* GetActiveApp() { return _activeApp; }
-	};
+		GLFWwindow* GetWindow() { return _window;  }
 
+
+
+        static CApp* GetActiveApp() { return _activeApp; }
+		static GLFWwindow* GetAppWindow() { if( _activeApp ) { return _activeApp->GetWindow(); } return 0; }
+	};
 
 }

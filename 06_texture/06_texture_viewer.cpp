@@ -172,7 +172,6 @@ protected:
     virtual void _startup();
     virtual void _render();
     virtual void _shutdown();
-	virtual void _onKey( int t_key, int t_action, int t_mods );
 	virtual void _onMouseScroll( double t_offset );
 };
 
@@ -219,17 +218,17 @@ void CRenderer::_shutdown() {
     }
 }
 
-void CRenderer::_onKey( int t_key, int t_action, int t_mods ) {
-	if( t_key == GLFW_KEY_SPACE && t_action == GLFW_PRESS ) {
-		Utl::CFileBrowserDialog fileBrowser;
-		// filtering image files
-		fileBrowser._filter = "All(*.*)\0*.*\0png files(*.png)\0*.png\0jpg files(*.jpg)\0*.jpg\0\0";
-		if( fileBrowser.ShowDialog() ) {
-			_textureViewerSD->LoadImage( fileBrowser._fileName );
-		}
-
-	}
-}
+// void CRenderer::_onKeyPressed( int t_key, int t_action, int t_mods ) {
+// 	if( t_key == GLFW_KEY_SPACE && t_action == GLFW_PRESS ) {
+// 		Utl::CFileBrowserDialog fileBrowser;
+// 		// filtering image files
+// 		fileBrowser._filter = "All(*.*)\0*.*\0png files(*.png)\0*.png\0jpg files(*.jpg)\0*.jpg\0\0";
+// 		if( fileBrowser.ShowDialog() ) {
+// 			_textureViewerSD->LoadImage( fileBrowser._fileName );
+// 		}
+// 
+// 	}
+// }
 
 void CRenderer::_onMouseScroll( double t_offset ) {
 	if( _textureViewerSD ) {

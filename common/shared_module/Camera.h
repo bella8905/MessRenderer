@@ -56,30 +56,18 @@ public:
     virtual  ~CFreeFlyCamera() {}
 
 private:
-    /////////////////////////////////////////////////////////////////
-    //
-    // control buttons
-    // 
-    // left button dragging, camera orbit, 
-    //  keep the aiming point, but orbit the camera along camera aim/position sphere
-    //  horizontal: changing latitude
-    //  vertical  : changing longitude 
-    // 
-    // right button dragging, camera pan,
-    //  keep the aiming direction, but move the camera left or right.
-    //  horizontal: pan along camera +-x
-    //  vertical  : pan along camera +-y
-    //
-    // scroll, camera zoom,
-    //  keep the aiming point and the aiming direction, move camera along camera z
-    //
-    /////////////////////////////////////////////////////////////////
-    void updateControl( float t_delta, int t_key, int t_action );
+
 
 public:
-    void Update( float t_delta );
+    void Update( double t_delta );
     
-
+	/////////////////////////////////////////////////////////////////
+	//
+	//  Update camera controls
+	//  Put this after GLFW_PollEvents
+	//  
+	/////////////////////////////////////////////////////////////////
+	void UpdateControl( double t_delta );
 };
 
 

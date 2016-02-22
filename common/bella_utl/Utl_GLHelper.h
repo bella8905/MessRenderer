@@ -30,4 +30,12 @@ namespace Utl {
     /////////////////////////////////////////////////////////////////
     void GL_GenBuffer( GLuint& t_buffer, GLenum t_target, void* t_bufferData, unsigned int t_bufferLength, GLenum t_usage );
     */
+
+
+
+	void GL_ReceiveAndUnpackEventData();
+	bool GL_GetKeyOrMouseButtonPressed( int t_key );
+	bool GL_GetKeyOrMouseButtonHeld( int t_key );
+	bool GL_GetKeyOrMouseButtonRepeated( int t_key );
+	bool GL_GetKeyOrMouseButtonReleased( int t_key );
 }

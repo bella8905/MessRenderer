@@ -56,6 +56,10 @@ namespace MessRenderer {
 	
 	}
 
+	void CApp::_updateControls( double t_deltaTime ) {
+
+	}
+
 	void CApp::_render() {
 
 	}
@@ -74,14 +78,27 @@ namespace MessRenderer {
 		_activeApp->_onWindowResize( t_w, t_h );
 	}
 
-	// mouse button
-	void CApp::_onMouseButton( int t_button, int t_action ) {
 
-	}
 
-	void CApp::_glfw_onMouseButton( GLFWwindow* t_win, int t_button, int t_action, int t_mods ) {
-		_activeApp->_onMouseButton( t_button, t_action );
-	}
+// 	void CApp::_glfw_onMouseButton( GLFWwindow* t_win, int t_button, int t_action, int t_mods ) {
+// 		switch( t_action ) {
+// 			case GLFW_PRESS:
+// 			{
+// 				_activeApp->_onMouseButtonPressed( t_button );
+// 				_activeApp->_onMouseButtonRepeated( t_button );
+// 			} break;
+// 			case GLFW_RELEASE:
+// 			{
+// 				_activeApp->_onMouseButtonReleased( t_button );
+// 			} break;
+// 			case GLFW_REPEAT:
+// 			{
+// 				_activeApp->_onMouseButtonRepeated( t_button );
+// 			} break;
+// 			default: break;
+// 		}
+// 
+// 	}
 
 	// mouse move
 	void CApp::_onMouseMove( double t_x, double t_y ) {
@@ -110,14 +127,42 @@ namespace MessRenderer {
 		_activeApp->_onMouseScroll( t_yoffset );
 	}
 
-	// on key
-	void CApp::_onKey( int t_key, int t_action, int t_mods ) {
+// 	// on key
+// 	void CApp::_onKeyPressed( int t_key, int t_mods ) {
+// //		LogMsg << "key pressed" << LogEndl;
+// 
+// 		if( t_key == GLFW_KEY_ESCAPE ) {
+// 			glfwSetWindowShouldClose( _window, 1 );
+// 		}
+// 
+// 		// screen print
+// 		if( t_key == GLFW_KEY_F11 ) {
+// 			_screenPrint();
+// 		}
+// 	}
+// 
 
-	}
 
-	void CApp::_glfw_onKey( GLFWwindow* t_win, int t_key, int t_scancode, int t_action, int t_mods ) {
-		_activeApp->_onKey( t_key, t_action, t_mods );
-	}
+
+// 	void CApp::_glfw_onKey( GLFWwindow* t_win, int t_key, int t_scancode, int t_action, int t_mods ) {
+// 		switch( t_action ) {
+// 			case GLFW_PRESS:
+// 			{
+// 				_activeApp->_onKeyPressed( t_key, t_mods );
+// 				_activeApp->_onKeyRepeated( t_key, t_mods );
+// 			} break;
+// 			case GLFW_RELEASE:
+// 			{
+// 				_activeApp->_onKeyReleased( t_key, t_mods );
+// 			} break;
+// 			case GLFW_REPEAT:
+// 			{
+// 				_activeApp->_onKeyRepeated( t_key, t_mods );
+// 			} break;
+// 			default: break;
+// 		}
+// 
+// 	}
 
 	// on drop
 	void CApp::_onDrop( int t_count, const char** t_paths ) {
@@ -267,8 +312,8 @@ namespace MessRenderer {
 	void CApp::_glfw_registerCallbacks() {
 		glfwSetErrorCallback( CApp::_glfw_onError );
 		glfwSetWindowSizeCallback( _window, CApp::_glfw_onWindowResize );
-		glfwSetKeyCallback( _window, CApp::_glfw_onKey );
-		glfwSetMouseButtonCallback( _window, CApp::_glfw_onMouseButton );
+// 		glfwSetKeyCallback( _window, CApp::_glfw_onKey );
+// 		glfwSetMouseButtonCallback( _window, CApp::_glfw_onMouseButton );
 		glfwSetCursorPosCallback( _window, CApp::_glfw_onMouseMove );
 		glfwSetDropCallback( _window, CApp::_glfw_onDrop );
 		glfwSetCursorEnterCallback( _window, CApp::_glfw_onMouseEnter );
@@ -350,16 +395,9 @@ namespace MessRenderer {
 			glfwSwapBuffers( _window );
 
 			glfwPollEvents();
+			Utl::GL_ReceiveAndUnpackEventData();
 
-			// exit
-			if( GLFW_PRESS == glfwGetKey( _window, GLFW_KEY_ESCAPE ) ) {
-				glfwSetWindowShouldClose( _window, 1 );
-			}
-			
-			// screen print
-			if( GLFW_PRESS == glfwGetKey( _window, GLFW_KEY_F11 ) ) {
-				_screenPrint();
-			}
+			_updateControls( deltaTime );
 
 
 		}
