@@ -96,12 +96,19 @@ namespace Utl {
 		return true;
     }
 
+
+	/////////////////////////////////////////////////////////////////
+	/////////////////////////////////////////////////////////////////
+	//
+	// events
+	//
+	/////////////////////////////////////////////////////////////////
+	/////////////////////////////////////////////////////////////////
 	struct S_KEY_BUTTON {
 		struct S_KEY_BUTTON_DATA {
 			bool _held;
 			bool _pressed;
 			bool _repeated;
-			bool _releasedStatic;
 			bool _released;
 
 			float _initialRepeatedDelay;
@@ -109,7 +116,7 @@ namespace Utl {
 			float _currentDelay;
 			float _currentRepeatedDelay;
 
-			S_KEY_BUTTON_DATA() : _held( false ), _pressed( false ), _repeated( false ), _released( false ), _releasedStatic( true ),
+			S_KEY_BUTTON_DATA() : _held( false ), _pressed( false ), _repeated( false ), _released( false ), 
 				_initialRepeatedDelay( 0.5f ), _repeatedDelay( 0.2f ), _currentDelay( 0.f ), _currentRepeatedDelay( _initialRepeatedDelay ) {
 
 			}
@@ -119,10 +126,16 @@ namespace Utl {
 		std::unordered_map<int, S_KEY_BUTTON_DATA> _keyOrMouseButtonMaps;
 
 		S_KEY_BUTTON() {
-			_populateData();
+			_resetKeyOrMouseButtonData();
 		}
 
-		void _populateData() {
+
+		/////////////////////////////////////////////////////////////////
+		//
+		// reset key or mouse button map data
+		//
+		/////////////////////////////////////////////////////////////////
+		void _resetKeyOrMouseButtonData() {
 			_keyOrMouseButtonMaps.clear();
 #define GLFW_KEY_ITEM( key ) GLFW_KEY_MOUSE_ITEM( key ) 
 #define GLFW_MOUSE_BUTTON_ITEM( button ) GLFW_KEY_MOUSE_ITEM( button )
@@ -134,11 +147,26 @@ namespace Utl {
 #undef GLFW_KEY_MOUSE_ITEM
 		}
 
+
+		/////////////////////////////////////////////////////////////////
+		//
+		// if a key/mouse button logged in map
+		//
+		/////////////////////////////////////////////////////////////////
 		bool DoesKeyOrMouseButtonExist( int t_id ) {
 			std::unordered_map<int, S_KEY_BUTTON_DATA>::const_iterator got = _keyOrMouseButtonMaps.find( t_id );
 			return got != _keyOrMouseButtonMaps.end();
 		}
 
+
+		/////////////////////////////////////////////////////////////////
+		//
+		// receive and unpack event data.
+		// update key/mouse button states.
+		// this should be after events have been polled,
+		// and usually be called every frame.
+		//
+		/////////////////////////////////////////////////////////////////
 		void ReceiveAndUnpackEventData() {
 			
 			// key button
@@ -151,7 +179,6 @@ namespace Utl {
 			if( GLFW_PRESS == entry##( MessRenderer::CApp::GetAppWindow(), item_id ) ) { \
 					_keyOrMouseButtonMaps[item_id]._pressed = !_keyOrMouseButtonMaps[item_id]._held; \
 					_keyOrMouseButtonMaps[item_id]._held = true; \
-					_keyOrMouseButtonMaps[item_id]._releasedStatic = false; \
 					_keyOrMouseButtonMaps[item_id]._currentDelay += (float)MessRenderer::CApp::GetAppDeltaTime(); \
 					if( _keyOrMouseButtonMaps[item_id]._pressed ) { \
 						_keyOrMouseButtonMaps[item_id]._repeated = true; \
@@ -165,11 +192,10 @@ namespace Utl {
 						_keyOrMouseButtonMaps[item_id]._repeated = false; \
 					} \
 				} else if( GLFW_RELEASE == entry##( MessRenderer::CApp::GetAppWindow(), item_id ) ) { \
+					_keyOrMouseButtonMaps[item_id]._released = _keyOrMouseButtonMaps[item_id]._held; \
 					_keyOrMouseButtonMaps[item_id]._held = false; \
 					_keyOrMouseButtonMaps[item_id]._pressed = false; \
 					_keyOrMouseButtonMaps[item_id]._repeated = false; \
-					_keyOrMouseButtonMaps[item_id]._released = !_keyOrMouseButtonMaps[item_id]._releasedStatic; \
-					_keyOrMouseButtonMaps[item_id]._releasedStatic = true; \
 				} \
 			} else { \
 				LogWarning << "button id not exist? " << #item << LogEndl; \
@@ -181,6 +207,7 @@ namespace Utl {
 		}
 
 	} KeyOrMouseButtonData;
+
 
 	void GL_ReceiveAndUnpackEventData() {
 		KeyOrMouseButtonData.ReceiveAndUnpackEventData();
