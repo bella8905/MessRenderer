@@ -231,5 +231,5 @@ public:
 
 };
 
-void View_SetAsActive( const CView& t_view );
+void View_SetAsActive( CView* t_view );
 CView* View_GetActive();

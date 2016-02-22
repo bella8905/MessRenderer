@@ -57,7 +57,13 @@ namespace MessRenderer {
 	}
 
 	void CApp::_updateControls( double t_deltaTime ) {
+		if( Utl::GL_GetKeyOrMouseButtonPressed( GLFW_KEY_ESCAPE ) ) {
+			glfwSetWindowShouldClose( _window, 1 );
+		} 
 
+		if( Utl::GL_GetKeyOrMouseButtonPressed( GLFW_KEY_F11 ) ) {
+			_screenPrint();
+		}
 	}
 
 	void CApp::_render() {

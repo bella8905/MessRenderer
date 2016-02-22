@@ -14,16 +14,16 @@
 #include "MessRendererApp.h"
 
 static struct {
-	CView _view;
+	CView* _view;
 	
 }View;
 
-void View_SetAsActive( const CView& t_view ) {
+void View_SetAsActive( CView* t_view ) {
 	View._view = t_view;
 }
 
 CView* View_GetActive() {
-	return &View._view;
+	return View._view;
 }
 
 void CView::initDefaults() {

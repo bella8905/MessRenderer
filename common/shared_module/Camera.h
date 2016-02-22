@@ -11,6 +11,8 @@
 #pragma once
 #include "Utl_Include.h"
 
+class CView;
+
 /////////////////////////////////////////////////////////////////
 //
 //  Camera Base
@@ -52,10 +54,24 @@ public:
 /////////////////////////////////////////////////////////////////
 class CFreeFlyCamera : public CCamera {
 public:
-    CFreeFlyCamera() {}
+    CFreeFlyCamera();
     virtual  ~CFreeFlyCamera() {}
 
-private:
+protected:
+	enum CAMERA_BEHAVIOR {
+		CAMERA_PAN = 0,
+		CAMERA_ORBIT,
+		CAMERA_ZOOM,
+
+		CAMERA_BEHAVIOR_COUNTER,
+	};
+
+	struct S_CAMERA_BEHAVIOR_DATA {
+		double _cursorX;
+		double _cursorY;
+		int _mouseButtonId;
+		float _speed;
+	}_cameraHehaviors[CAMERA_BEHAVIOR_COUNTER];
 
 
 public:
@@ -68,6 +84,7 @@ public:
 	//  
 	/////////////////////////////////////////////////////////////////
 	void UpdateControl( double t_delta );
+	void UpdateView( CView* t_view );
 };
 
 

@@ -62,8 +62,11 @@ void CFreeflyCamApp::_setupScene() {
 
 	_freeflyCam.Setup( Utl::ToPositon( camPos ), Utl::ToPositon( camTarget ) );
 
-// 	_view.SetCameraPostionFaceAndUp( Utl::ToPositon( camPos ), Utl::ToDirection( camFace ) );
-// 	_view.SetHorizontalFieldOfView( Utl::DegToRad( 80.f ) );
+ 	// _view.SetCameraPostionFaceAndUp( Utl::ToPositon( camPos ), Utl::ToDirection( camFace ) );
+ 	// _view.SetHorizontalFieldOfView( Utl::DegToRad( 80.f ) );
+	_freeflyCam.UpdateView( &_view );
+	_view.SetHorizontalFieldOfView( Utl::DegToRad( 80.f ) );
+	View_SetAsActive( &_view );
 
 	// light
 	vec3 lightPos( 0.f, 0.f, 2.f );
@@ -117,33 +120,10 @@ void CFreeflyCamApp::_startup() {
 }
 
 void CFreeflyCamApp::_updateControls( double _deltaTime ) {
-// 	CApp::_updateControls( _deltaTime );
-// 
-// 	_freeflyCam.UpdateControl( _deltaTime );
-// 
-// 	if( Utl::GL_GetKeyOrMouseButtonPressed( GLFW_MOUSE_BUTTON_LEFT ) ) {
-// 		LogMsg << "q pressed" << LogEndl;
-// 	}
-// 
-// 	if( Utl::GL_GetKeyOrMouseButtonHeld( GLFW_MOUSE_BUTTON_LEFT ) ) {
-// 		LogMsg << "q held" << LogEndl;
-// 	}
-// 
-// 	if( Utl::GL_GetKeyOrMouseButtonReleased( GLFW_MOUSE_BUTTON_LEFT ) ) {
-// 		LogMsg << "q released" << LogEndl;
-// 	}
-// 
-// 	if( Utl::GL_GetKeyOrMouseButtonRepeated( GLFW_MOUSE_BUTTON_LEFT ) ) {
-// 		static double prevTime = glfwGetTime();
-// 		double curTime = glfwGetTime();
-// 		double deltaTime = curTime - prevTime;
-// 		prevTime = curTime;
-// 
-// 		LogMsg << "q repeateed" << LogEndl;
-// 		LogMsg << " deltaTime: " << deltaTime<<LogEndl;
-// 		
-// 	}
-// 
+	CApp::_updateControls( _deltaTime );
+
+	_freeflyCam.UpdateControl( _deltaTime );
+	_freeflyCam.UpdateView( &_view );
 
 }
 
