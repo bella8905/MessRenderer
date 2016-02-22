@@ -292,7 +292,7 @@ namespace MessRenderer {
 				_info._winWidth = mode->width;
 				_info._winHeight = mode->height;
 			}
-
+			
 			_window = glfwCreateWindow( _info._winWidth, _info._winHeight, _info._title.c_str(), mon, 0 );
 		} else {
 			_window = glfwCreateWindow( _info._winWidth, _info._winHeight, _info._title.c_str(), 0, 0 );
@@ -386,10 +386,10 @@ namespace MessRenderer {
 		while( !glfwWindowShouldClose( _window ) ) {
 			static double prevTime = glfwGetTime();
 			double curTime = glfwGetTime();
-			double deltaTime = curTime - prevTime;
+			_deltaTime = curTime - prevTime;
 			prevTime = curTime;
 
-			_update( deltaTime );
+			_update( _deltaTime );
 			_render();
 
 			glfwSwapBuffers( _window );
@@ -397,7 +397,7 @@ namespace MessRenderer {
 			glfwPollEvents();
 			Utl::GL_ReceiveAndUnpackEventData();
 
-			_updateControls( deltaTime );
+			_updateControls( _deltaTime );
 
 
 		}

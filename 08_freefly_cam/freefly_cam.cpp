@@ -133,6 +133,17 @@ void CFreeflyCamApp::_updateControls( double _deltaTime ) {
 		LogMsg << "q released" << LogEndl;
 	}
 
+	if( Utl::GL_GetKeyOrMouseButtonRepeated( GLFW_MOUSE_BUTTON_LEFT ) ) {
+		static double prevTime = glfwGetTime();
+		double curTime = glfwGetTime();
+		double deltaTime = curTime - prevTime;
+		prevTime = curTime;
+
+		LogMsg << "q repeateed" << LogEndl;
+		LogMsg << " deltaTime: " << deltaTime<<LogEndl;
+		
+	}
+
 
 }
 

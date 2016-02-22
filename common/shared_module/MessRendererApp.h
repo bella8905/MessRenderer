@@ -17,7 +17,7 @@ namespace MessRenderer {
 
 	class CApp {
 	public:
-		CApp( std::string t_title ) : _window( 0 ), _bRunning( false ) {
+		CApp( std::string t_title ) : _window( 0 ), _bRunning( false ), _deltaTime( 0 ) {
 			_info._title = t_title;
 		}
 		virtual ~CApp() = 0;
@@ -51,6 +51,8 @@ namespace MessRenderer {
 
 		bool _bRunning;
 		GLFWwindow* _window;
+		
+		double _deltaTime;
 
 	protected:
 		bool _isActive() { return ( _activeApp != 0 )/* && ( _activeApp == this )*/; }
@@ -147,6 +149,7 @@ namespace MessRenderer {
 
         static CApp* GetActiveApp() { return _activeApp; }
 		static GLFWwindow* GetAppWindow() { if( _activeApp ) { return _activeApp->GetWindow(); } return 0; }
+		static double GetAppDeltaTime() { if( _activeApp ) return _activeApp->_deltaTime; return 0; } 
 	};
 
 }

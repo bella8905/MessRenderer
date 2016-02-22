@@ -106,9 +106,11 @@ namespace Utl {
 
 			float _initialRepeatedDelay;
 			float _repeatedDelay;
+			float _currentDelay;
+			float _currentRepeatedDelay;
 
 			S_KEY_BUTTON_DATA() : _held( false ), _pressed( false ), _repeated( false ), _released( false ), _releasedStatic( true ),
-				_initialRepeatedDelay( 0.1f ), _repeatedDelay( 0.033f ) {
+				_initialRepeatedDelay( 0.5f ), _repeatedDelay( 0.2f ), _currentDelay( 0.f ), _currentRepeatedDelay( _initialRepeatedDelay ) {
 
 			}
 		};
@@ -121,15 +123,15 @@ namespace Utl {
 		}
 
 		void _populateData() {
-#define GLFW_KEY_ITEM( key ) \
-			if( !DoesKeyOrMouseButtonExist( GLFW_##key ) ) _keyOrMouseButtonMaps[GLFW_##key] = S_KEY_BUTTON_DATA(); \
-			else LogWarning<<"key id repeated? "<<#key<<LogEndl; 
+			_keyOrMouseButtonMaps.clear();
+#define GLFW_KEY_ITEM( key ) GLFW_KEY_MOUSE_ITEM( key ) 
+#define GLFW_MOUSE_BUTTON_ITEM( button ) GLFW_KEY_MOUSE_ITEM( button )
+#define GLFW_KEY_MOUSE_ITEM( item ) \
+			if( !DoesKeyOrMouseButtonExist( GLFW_##item ) ) _keyOrMouseButtonMaps[GLFW_##item] = S_KEY_BUTTON_DATA(); \
+			else LogWarning<<"item id repeated? "<<#item<<LogEndl; 
 #include "GLFWKeyButton.items"
-
-#define GLFW_MOUSE_BUTTON_ITEM( button ) \
-			if( !DoesKeyOrMouseButtonExist( GLFW_MOUSE_##button ) ) _keyOrMouseButtonMaps[GLFW_MOUSE_##button] = S_KEY_BUTTON_DATA(); \
-			else LogWarning<<"button id repeated? "<<#button<<LogEndl; 
 #include "GLFWMouseButton.items"
+#undef GLFW_KEY_MOUSE_ITEM
 		}
 
 		bool DoesKeyOrMouseButtonExist( int t_id ) {
@@ -138,47 +140,44 @@ namespace Utl {
 		}
 
 		void ReceiveAndUnpackEventData() {
+			
 			// key button
-			int key_id;
-#define GLFW_KEY_ITEM( key ) \
-			key_id = GLFW_##key; \
-			if(  DoesKeyOrMouseButtonExist( key_id ) ) { \
-				if( GLFW_PRESS == glfwGetKey( MessRenderer::CApp::GetAppWindow(), key_id ) ) { \
-					_keyOrMouseButtonMaps[key_id]._pressed = !_keyOrMouseButtonMaps[key_id]._held; \
-					_keyOrMouseButtonMaps[key_id]._held = true; \
-					_keyOrMouseButtonMaps[key_id]._releasedStatic = false; \
-				} else if( GLFW_RELEASE == glfwGetKey( MessRenderer::CApp::GetAppWindow(), key_id ) ) { \
-					_keyOrMouseButtonMaps[key_id]._held = false; \
-					_keyOrMouseButtonMaps[key_id]._pressed = false; \
-					_keyOrMouseButtonMaps[key_id]._repeated = false; \
-					_keyOrMouseButtonMaps[key_id]._released = !_keyOrMouseButtonMaps[key_id]._releasedStatic; \
-					_keyOrMouseButtonMaps[key_id]._releasedStatic = true; \
+			int item_id;
+#define GLFW_KEY_ITEM( key ) GLFW_KEY_MOUSE_ITEM( key, glfwGetKey ) 
+#define GLFW_MOUSE_BUTTON_ITEM( button ) GLFW_KEY_MOUSE_ITEM( button, glfwGetMouseButton )
+#define GLFW_KEY_MOUSE_ITEM( item, entry ) \
+			item_id = GLFW_##item; \
+			if(  DoesKeyOrMouseButtonExist( item_id ) ) { \
+			if( GLFW_PRESS == entry##( MessRenderer::CApp::GetAppWindow(), item_id ) ) { \
+					_keyOrMouseButtonMaps[item_id]._pressed = !_keyOrMouseButtonMaps[item_id]._held; \
+					_keyOrMouseButtonMaps[item_id]._held = true; \
+					_keyOrMouseButtonMaps[item_id]._releasedStatic = false; \
+					_keyOrMouseButtonMaps[item_id]._currentDelay += (float)MessRenderer::CApp::GetAppDeltaTime(); \
+					if( _keyOrMouseButtonMaps[item_id]._pressed ) { \
+						_keyOrMouseButtonMaps[item_id]._repeated = true; \
+						_keyOrMouseButtonMaps[item_id]._currentRepeatedDelay = _keyOrMouseButtonMaps[item_id]._initialRepeatedDelay; \
+						_keyOrMouseButtonMaps[item_id]._currentDelay = 0.f; \
+					} else if( _keyOrMouseButtonMaps[item_id]._currentDelay >= _keyOrMouseButtonMaps[item_id]._currentRepeatedDelay ) { \
+						_keyOrMouseButtonMaps[item_id]._currentRepeatedDelay = _keyOrMouseButtonMaps[item_id]._repeatedDelay; \
+						_keyOrMouseButtonMaps[item_id]._currentDelay = 0.f; \
+						_keyOrMouseButtonMaps[item_id]._repeated = true; \
+					} else { \
+						_keyOrMouseButtonMaps[item_id]._repeated = false; \
+					} \
+				} else if( GLFW_RELEASE == entry##( MessRenderer::CApp::GetAppWindow(), item_id ) ) { \
+					_keyOrMouseButtonMaps[item_id]._held = false; \
+					_keyOrMouseButtonMaps[item_id]._pressed = false; \
+					_keyOrMouseButtonMaps[item_id]._repeated = false; \
+					_keyOrMouseButtonMaps[item_id]._released = !_keyOrMouseButtonMaps[item_id]._releasedStatic; \
+					_keyOrMouseButtonMaps[item_id]._releasedStatic = true; \
 				} \
 			} else { \
-				LogWarning << "button id not exist? " << #key << LogEndl; \
+				LogWarning << "button id not exist? " << #item << LogEndl; \
 			}
 #include "GLFWKeyButton.items"
-
-			// mouse 
-			int button_id;
-#define GLFW_MOUSE_BUTTON_ITEM( button ) \
-			button_id = GLFW_MOUSE_##button; \
-			if( DoesKeyOrMouseButtonExist( button_id ) ) { \
-				if( GLFW_PRESS == glfwGetMouseButton( MessRenderer::CApp::GetAppWindow(), button_id ) ) { \
-					_keyOrMouseButtonMaps[button_id]._pressed = _keyOrMouseButtonMaps[button_id]._held ? false : true; \
-					_keyOrMouseButtonMaps[button_id]._held = true; \
-					_keyOrMouseButtonMaps[button_id]._releasedStatic = false; \
-				} else if( GLFW_RELEASE == glfwGetMouseButton( MessRenderer::CApp::GetAppWindow(), button_id ) ) { \
-					_keyOrMouseButtonMaps[button_id]._held = false; \
-					_keyOrMouseButtonMaps[button_id]._pressed = false; \
-					_keyOrMouseButtonMaps[button_id]._repeated = false; \
-					_keyOrMouseButtonMaps[button_id]._released = !_keyOrMouseButtonMaps[button_id]._releasedStatic; \
-					_keyOrMouseButtonMaps[button_id]._releasedStatic = true; \
-				} \
-			} else { \
-				LogWarning << "button id not exist? " << #button << LogEndl; \
-			}
 #include "GLFWMouseButton.items"
+#undef GLFW_KEY_MOUSE_ITEM
+			
 		}
 
 	} KeyOrMouseButtonData;
