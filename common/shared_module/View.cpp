@@ -33,8 +33,10 @@ void CView::initDefaults() {
 	_bPerspective = true;
 
 	// view 
-	vec4 camPos( 0.f, 0.f, 0.f, 1.f );
-	vec4 camFace( 0.f, 0.f, -1.f, 0.f );
+	// vec4 camPos( 0.15f, -0.63f, 1.89f, 1.f );
+	vec4 camPos( 0.f, 2.f, 2.f, 1.f );
+	// vec4 camFace( 0.f, 0.f, -1.f, 0.f );
+	vec4 camFace = -Utl::ToDirection( glm::normalize( vec3( camPos ) ) );
 	vec4 camUp( 0.f, 1.f, 0.f, 0.f );
 	SetCameraPostionFaceAndUp( camPos, camFace, camUp );
 
@@ -262,10 +264,10 @@ void CView::SetCameraPostionFaceAndUp( vec4 t_pos, vec4 t_facing, vec4 t_up ) {
 	vec3 face = Utl::ToVec3( t_facing );
 	vec3 up = Utl::ToVec3( t_up );
 	vec3 z = -face;
-	vec3 x = glm::cross( up, z );
-	vec3 y = glm::cross( z, x );
+	vec3 x = glm::normalize( glm ::cross( up, z ) );
+	vec3 y = glm::normalize( glm::cross( z, x ) );
 
-// 
+
 // 	// inverse of a translation matrix
 // 	// T(v)^-1 = T(-v)
 // 	mat4 t( vec4( 1.f, 0.f, 0.f, 0.f ),
@@ -290,6 +292,8 @@ void CView::SetCameraPostionFaceAndUp( vec4 t_pos, vec4 t_facing, vec4 t_up ) {
                                 Utl::ToDirection( z ), 
                                 t_pos 
                                 );
+
+
 	// dirty flags
 	_dirtyFlags |= _DIRTY_FLAG_WORLD_TO_VIEW_MATRIX | _DIRTY_FLAG_WORLD_TO_PROJ_MATRIX;
 	_dirtyFlags &= ~_DIRTY_FLAG_VIEW_TO_WORLD_MATRIX;

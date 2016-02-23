@@ -302,7 +302,7 @@ float CObj::rayIntersectWithBB( const Utl::SRay& t_ray, const SBoundBox* t_bb ) 
 	// Assert( Equals ( glm::length( Normal ), 1.f ), "normal not assigned correctly" );
 	Normal = glm::normalize( _modelMat * Normal );
 
-	return glm::length( IntersectPoint - t_ray._Origin );;
+	return glm::length( IntersectPoint - t_ray._Origin );
 }
 
 float CObj::RayIntersectTestWithBB( const Utl::SRay& t_ray ) {

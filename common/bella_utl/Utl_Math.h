@@ -157,6 +157,9 @@ namespace Utl {
 
 			return SRay( t_InstPoint, RflRayDir );
 		}
+
+		float RayIntersectTestWithSphere( const vec4& t_center, const float& t_radius );
+		float RayIntersectTestWithAxisAlignedBox( const vec3& t_mins, const vec3& t_maxs );
 	};
 
 

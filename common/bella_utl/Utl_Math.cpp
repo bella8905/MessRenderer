@@ -144,9 +144,9 @@ namespace Utl {
 		Matrix_GetTranslation( t_transform, translate );
 
 		mat4 result = Matrix_ToMat4( inv_rot );
-		result[3][0] = -result[0][0] * translate[0] - -result[1][0] * translate[1] - result[2][0] * translate[2];
-		result[3][1] = -result[0][1] * translate[0] - -result[1][1] * translate[1] - result[2][1] * translate[2];
-		result[3][2] = -result[0][2] * translate[0] - -result[1][2] * translate[1] - result[2][2] * translate[2];
+		result[3][0] = -result[0][0] * translate[0] - result[1][0] * translate[1] - result[2][0] * translate[2];
+		result[3][1] = -result[0][1] * translate[0] - result[1][1] * translate[1] - result[2][1] * translate[2];
+		result[3][2] = -result[0][2] * translate[0] - result[1][2] * translate[1] - result[2][2] * translate[2];
 
 		return result;
 	}
@@ -214,6 +214,74 @@ namespace Utl {
 					  vec4( 0.f, 0.f, scale[2], 0.f ),
 					  vec4( 0.f, 0.f, 0.f, 1.f )
 					  );
+	}
+
+
+	/////////////////////////////////////////////////////////////////
+	/////////////////////////////////////////////////////////////////
+	//
+	// Ray
+	//
+	/////////////////////////////////////////////////////////////////
+	/////////////////////////////////////////////////////////////////
+	float SRay::RayIntersectTestWithSphere( const vec4& t_center, const float& t_radius ) {
+		vec4 posObj = _Origin;
+		vec4 dirObj = _Dir;
+
+		// solve function: At2 + Bt + C = 0
+		float A = dirObj.x * dirObj.x + dirObj.y * dirObj.y + dirObj.z * dirObj.z;
+		float B = 2 * ( ( posObj.x - t_center.x ) * dirObj.x + ( posObj.y - t_center.y ) * dirObj.y + ( posObj.z - t_center.z ) * dirObj.z );
+		float C = ( posObj.x - t_center.x ) * ( posObj.x - t_center.x ) + ( posObj.y - t_center.y ) * ( posObj.y - t_center.y ) + ( posObj.z - t_center.z ) * ( posObj.z - t_center.z ) - t_radius * t_radius;
+
+		if( Utl::Equals( A, 0.f ) ) {
+			LogError << "anything wrong with ray?" << LogEndl;
+			return -1.f;
+		}
+
+		float Radicand = B * B - 4 * A * C;
+		if( Radicand < 0 )  return -1.f;
+
+		float t1 = ( -B + sqrt( Radicand ) ) * 0.5f / A;
+		float t2 = ( -B - sqrt( Radicand ) ) * 0.5f / A;
+
+		float tmax = max( t1, t2 );
+		float tmin = min( t1, t2 );
+
+		if( tmax < 0 ) return -1.f;
+
+		float t;
+		if( tmin >= 0 ) t = tmin;
+		else t = tmax;
+
+		return t;
+	}
+
+
+	float SRay::RayIntersectTestWithAxisAlignedBox( const vec3& t_mins, const vec3& t_maxs ) {
+		vec4 posObj = _Origin;
+		vec4 dirObj = _Dir;
+
+		// if xd, yd, zd equals to zero, skip this direction
+		float tNear = -std::numeric_limits<float>::infinity();
+		float tFar = std::numeric_limits<float>::infinity();
+		float t1, t2;
+
+		if( Utl::Equals( dirObj[0], 0.f ) && Utl::Equals( dirObj[1], 0.f ) && Utl::Equals( dirObj[2], 0.f ) )   return -1.f;
+
+		for( int i = 0; i < 3; ++i ) {
+			if( Utl::Equals( dirObj[i], 0.f ) ) {
+				if( posObj[i] > t_maxs[i] || posObj[i] < t_mins[i] )  return -1.f;
+			} else {
+				t1 = ( t_mins[i] - posObj[i] ) / dirObj[i];
+				t2 = ( t_maxs[i] - posObj[i] ) / dirObj[i];
+				tNear = max( tNear, min( t1, t2 ) );
+				tFar = min( tFar, max( t1, t2 ) );
+
+				if( tNear > tFar || tFar < 0 )  return -1.f;
+			}
+		}
+
+		return tNear;
 	}
 
 
