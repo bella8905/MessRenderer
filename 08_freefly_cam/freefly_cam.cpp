@@ -52,6 +52,7 @@ void CFreeflyCamApp::_deinitModules() {
 	CShaderContainer::GetInstance().Deinit();
 }
 
+
 void CFreeflyCamApp::_setupScene() {
 	////////////////////////////////////////////////////////
 	// init scenes

@@ -73,6 +73,8 @@ protected:
 		float _speed;
 	}_cameraHehaviors[CAMERA_BEHAVIOR_COUNTER];
 
+protected:
+	Utl::SRay _getRayFromCursorPos( const double& t_x, const double& t_y );
 
 public:
     void Update( double t_delta );

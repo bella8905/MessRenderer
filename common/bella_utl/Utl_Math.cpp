@@ -12,6 +12,7 @@
 #include "Utl_Math.h"
 #include "glm/gtx/transform.hpp"
 #include <assert.h>
+#include "View.h"
 
 namespace Utl {
 

@@ -30,11 +30,11 @@ void CCamera::Setup( const vec4& t_pos, const vec4& t_aim ) {
 
 
 CFreeFlyCamera::CFreeFlyCamera() {
-	_cameraHehaviors[CAMERA_PAN]._mouseButtonId = GLFW_MOUSE_BUTTON_LEFT;
+	_cameraHehaviors[CAMERA_PAN]._mouseButtonId = GLFW_MOUSE_BUTTON_MIDDLE;
 	_cameraHehaviors[CAMERA_PAN]._speed = 0.3f;
-	_cameraHehaviors[CAMERA_ORBIT]._mouseButtonId = GLFW_MOUSE_BUTTON_RIGHT;
+	_cameraHehaviors[CAMERA_ORBIT]._mouseButtonId = GLFW_MOUSE_BUTTON_LEFT;
 	_cameraHehaviors[CAMERA_ORBIT]._speed = 1.f;
-	_cameraHehaviors[CAMERA_ZOOM]._mouseButtonId = GLFW_MOUSE_BUTTON_MIDDLE;
+	_cameraHehaviors[CAMERA_ZOOM]._mouseButtonId = GLFW_MOUSE_BUTTON_RIGHT;
 	_cameraHehaviors[CAMERA_ZOOM]._speed = 1.f;
 }
 
@@ -43,17 +43,17 @@ void CFreeFlyCamera::UpdateControl( double t_delta ) {
 	//
 	// control buttons
 	// 
-	// left button dragging, camera pan,
+	// middle button dragging, camera pan,
 	//  keep the aiming direction, but move the camera left or right.
 	//  horizontal: pan along camera +-x
 	//  vertical  : pan along camera +-y
 	//
-	// right button dragging, camera orbit, 
+	// left button dragging, camera orbit, 
 	//  keep the aiming point, but orbit the camera along camera aim/position sphere
 	//  horizontal: changing latitude
 	//  vertical  : changing longitude 
 	//
-	// middle button dragging, camera zoom,
+	// right button dragging, camera zoom,
 	//  keep the aiming point and the aiming direction, move camera along camera z
 	//
 	/////////////////////////////////////////////////////////////////
@@ -111,6 +111,22 @@ void CFreeFlyCamera::Update( double t_delta ) {
 }
 
 
+Utl::SRay CFreeFlyCamera::_getRayFromCursorPos( const double& t_x, const double& t_y ) {
+	// nds ( -1 , 1 )
+	int winWidth, winHeight;
+	glfwGetWindowSize( MessRenderer::CApp::GetAppWindow(), &winWidth, &winHeight );
+	float x = ( 2.f * t_x ) / ( float )winWidth - 1.f;
+	float y = 1.f - ( 2.f * t_y ) / ( float )winHeight;
+	vec3 dir_nds( x, y, 1.f );
+	vec4 dir_clip( dir_nds.x, dir_nds.y, -1.f, 0.f );
+	// get the current used camera's proj matrix
+	vec4 dir_eye = View_GetActive()->GetProj2ViewMatrix() * dir_clip;
+	dir_eye = vec4( dir_eye.x, dir_eye.y, -1.f, 0.f );
+	Utl::SRay ray_eye( vec4( 0.f, 0.f, 0.f, 1.f ), dir_eye );
+	Utl::SRay ray_wor = ray_eye.Transform( View_GetActive()->GetView2WorldMatrix() );
+
+	return ray_wor;
+}
 
 
 
