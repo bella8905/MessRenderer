@@ -36,10 +36,15 @@ protected:
     //  
     /////////////////////////////////////////////////////////////////
     vec4 _aim;
-
+	/////////////////////////////////////////////////////////////////
+	//
+	//  camera up direction
+	//  
+	/////////////////////////////////////////////////////////////////
+	vec4 _up;
 
 public:
-    void Setup( const vec4& t_pos, const vec4& t_aim );
+	void Setup( const vec4& t_pos, const vec4& t_aim, const vec4& t_up = vec4( 0.f, 1.f, 0.f, 0.f )  );
 
     vec4 GetPos() { return _pos; }
     vec4 GetAiming() { return _aim; }
@@ -74,7 +79,7 @@ protected:
 	}_cameraHehaviors[CAMERA_BEHAVIOR_COUNTER];
 
 protected:
-	Utl::SRay _getRayFromCursorPos( const double& t_x, const double& t_y );
+	Utl::SRay _getCameraCursorRayFromCursorPos( const double& t_x, const double& t_y );
 
 public:
     void Update( double t_delta );

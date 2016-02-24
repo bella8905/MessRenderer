@@ -58,13 +58,15 @@ void CFreeflyCamApp::_setupScene() {
 	// init scenes
 
  	glm::vec3 camPos( 0.f, 0.f, 2.0f );
+	// glm::vec3 camPos( 0.15f, -0.63f, 1.89f );
  	glm::vec3 camTarget( 0.f, 0.f, 0.f );
  	glm::vec3 camFace = glm::normalize( camTarget - camPos );
+	glm::vec3 camUp( 0.f, 1.f, 0.f );
 
-	_freeflyCam.Setup( Utl::ToPositon( camPos ), Utl::ToPositon( camTarget ) );
+	_freeflyCam.Setup( Utl::ToPositon( camPos ), Utl::ToPositon( camTarget ), Utl::ToDirection( camUp ) );
 
- 	// _view.SetCameraPostionFaceAndUp( Utl::ToPositon( camPos ), Utl::ToDirection( camFace ) );
- 	// _view.SetHorizontalFieldOfView( Utl::DegToRad( 80.f ) );
+	_view.SetCameraPostionFaceAndUp( Utl::ToPositon( camPos ), Utl::ToDirection( camFace ) );
+	_view.SetHorizontalFieldOfView( Utl::DegToRad( 80.f ) );
 	_freeflyCam.UpdateView( &_view );
 	_view.SetHorizontalFieldOfView( Utl::DegToRad( 80.f ) );
 	View_SetAsActive( &_view );
@@ -96,9 +98,9 @@ void CFreeflyCamApp::_setupScene() {
 	float scale_s = 0.5f;
 	float scale_xs = 0.1f;
 
-	CObj obj( GEO_SPIDER );
+	CObj obj( GEO_UNIT_CUBE );
 	// obj_sphere._material = blinnMat;
-	obj.SetupModelMatrix( translate_center, rot_x30 * rot_y90, scale_s );
+	obj.SetupModelMatrix( translate_center, rot_x30, scale_s );
 	obj.SetShader( SD_NORMAL_TEST );
 	_scene.AddObj( obj );
 

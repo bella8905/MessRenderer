@@ -22,9 +22,10 @@ CCamera::~CCamera( void ) {
 }
 
 
-void CCamera::Setup( const vec4& t_pos, const vec4& t_aim ) {
+void CCamera::Setup( const vec4& t_pos, const vec4& t_aim, const vec4& t_up ) {
 	_pos = t_pos;
 	_aim = t_aim;
+	_up = t_up;
 }
 
 
@@ -33,7 +34,7 @@ CFreeFlyCamera::CFreeFlyCamera() {
 	_cameraHehaviors[CAMERA_PAN]._mouseButtonId = GLFW_MOUSE_BUTTON_MIDDLE;
 	_cameraHehaviors[CAMERA_PAN]._speed = 0.3f;
 	_cameraHehaviors[CAMERA_ORBIT]._mouseButtonId = GLFW_MOUSE_BUTTON_LEFT;
-	_cameraHehaviors[CAMERA_ORBIT]._speed = 1.f;
+	_cameraHehaviors[CAMERA_ORBIT]._speed = 100.f;
 	_cameraHehaviors[CAMERA_ZOOM]._mouseButtonId = GLFW_MOUSE_BUTTON_RIGHT;
 	_cameraHehaviors[CAMERA_ZOOM]._speed = 1.f;
 }
@@ -69,6 +70,10 @@ void CFreeFlyCamera::UpdateControl( double t_delta ) {
 			double deltaX = x - _cameraHehaviors[b]._cursorX;
 			double deltaY = y - _cameraHehaviors[b]._cursorY;
 
+			if( Utl::Equals( deltaX, 0.0 ) && Utl::Equals( deltaY, 0.0 ) ) {
+				return;
+			}
+
 			switch( b ) {
 			case CAMERA_PAN:
 				{
@@ -78,15 +83,27 @@ void CFreeFlyCamera::UpdateControl( double t_delta ) {
 					_aim.y += -(float)deltaY * (float)t_delta * _cameraHehaviors[b]._speed;
 				} break;
 			case CAMERA_ORBIT:
-				{
-
+				{ 
+					Utl::SRay oldRay = _getCameraCursorRayFromCursorPos( _cameraHehaviors[b]._cursorX, _cameraHehaviors[b]._cursorY );
+					Utl::SRay newRay = _getCameraCursorRayFromCursorPos( x, y );
+					vec3 startSide = vec3( oldRay._Dir );
+					vec3 endSide = vec3( newRay._Dir );
+					vec3 rotAxis = glm::normalize( glm::cross( startSide, endSide ) );
+					float rotAngle = acos( glm::dot( startSide, endSide ) ) * 2 * (float)t_delta * _cameraHehaviors[b]._speed; 
+					glm::quat rotQuat = glm::angleAxis( rotAngle, rotAxis );
+					mat3 rot_quat = glm::toMat3( rotQuat );
+					vec3 facing = vec3( glm::normalize( _aim - _pos ) );
+					facing = rot_quat * facing;
+					_up = Utl::ToDirection( glm::normalize( rot_quat * vec3( _up ) ) );
+				    float dist = glm::distance(_aim, _pos );
+					_pos = _aim - Utl::ToDirection( dist * facing );
 				} break;
 			case CAMERA_ZOOM:
 				{
 					float delta = abs( deltaX ) > abs( deltaY ) ? deltaX : deltaY;
 					float dist = glm::distance( _pos, _aim );
 					dist = max( dist - delta * _cameraHehaviors[b]._speed * (float)t_delta, 1.f );
-					vec4 facing = glm::normalize( _aim - _pos );
+					vec4 facing = glm::normalize( _aim - _pos ); 
 					_pos = _aim - facing * dist;
 				} break;
 			default: break;
@@ -104,14 +121,14 @@ void CFreeFlyCamera::UpdateControl( double t_delta ) {
 void CFreeFlyCamera::UpdateView( CView* t_view ) {
 	if( !t_view ) return;
 
-	t_view->SetCameraPostionFaceAndUp( _pos, glm::normalize( _aim - _pos ) );
+	t_view->SetCameraPostionFaceAndUp( _pos, glm::normalize( _aim - _pos ), _up );
 }
 
 void CFreeFlyCamera::Update( double t_delta ) {
 }
 
 
-Utl::SRay CFreeFlyCamera::_getRayFromCursorPos( const double& t_x, const double& t_y ) {
+Utl::SRay CFreeFlyCamera::_getCameraCursorRayFromCursorPos( const double& t_x, const double& t_y ) {
 	// nds ( -1 , 1 )
 	int winWidth, winHeight;
 	glfwGetWindowSize( MessRenderer::CApp::GetAppWindow(), &winWidth, &winHeight );
