@@ -46,6 +46,7 @@ public:
 protected:
 	CScene _scene;
 	CDiffuseMapSD* _shader;
+	CView _view;
 
 protected:
 	virtual void _startup();
@@ -71,15 +72,14 @@ void CDiffuseMapApp::_deinitModules() {
 void CDiffuseMapApp::_setupScene() {
 	////////////////////////////////////////////////////////
 	// init scenes
-
- 	glm::vec3 camPos( 0.f, 0.f, 2.0f );
+	glm::vec3 camPos( 0.15f, -0.63f, 1.89f );
+ 	// glm::vec3 camPos( 0.f, 0.f, 2.0f );
  	glm::vec3 camTarget( 0.f, 0.f, 0.f );
  	glm::vec3 camFace = glm::normalize( camTarget - camPos );
 
-	CView view;
-	view.SetCameraPostionFaceAndUp( Utl::ToPositon( camPos ), Utl::ToDirection( camFace ) );
-	view.SetHorizontalFieldOfView( Utl::DegToRad( 80.f ) );
-	View_SetAsActive( view );
+	_view.SetCameraPostionFaceAndUp( Utl::ToPositon( camPos ), Utl::ToDirection( camFace ) );
+	_view.SetHorizontalFieldOfView( Utl::DegToRad( 80.f ) );
+	View_SetAsActive( &_view );
 
 	// light
 	vec3 lightPos( 0.f, 0.f, 2.f );

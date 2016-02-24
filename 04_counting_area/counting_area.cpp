@@ -35,6 +35,7 @@ public:
 
 protected:
     CScene _scene;
+	CView _view;
 
 protected:
     virtual void _startup();
@@ -72,9 +73,9 @@ void CRenderer::_setupScene() {
     glm::vec3 camTarget( 0.f, 0.f, 0.f );
     glm::vec3 camFace = glm::normalize( camTarget - camPos );
 
-    CView* view = View_GetActive();
-    view->SetCameraPostionFaceAndUp( Utl::ToPositon( camPos ), Utl::ToDirection( camFace ) );
-    view->SetHorizontalFieldOfView( Utl::DegToRad( 80.f ) );
+	_view.SetCameraPostionFaceAndUp( Utl::ToPositon( camPos ), Utl::ToDirection( camFace ) );
+    _view.SetHorizontalFieldOfView( Utl::DegToRad( 80.f ) );
+	View_SetAsActive( &_view );
 
 
     // light
