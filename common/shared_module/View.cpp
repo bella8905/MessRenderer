@@ -20,6 +20,9 @@ static struct {
 
 void View_SetAsActive( CView* t_view ) {
 	View._view = t_view;
+	// also marked as being used viewport for OpenGL
+	CView::SViewPort* viewport = t_view->GetViewPort();
+	viewport->SetAsActive();
 }
 
 CView* View_GetActive() {
@@ -44,6 +47,19 @@ void CView::initDefaults() {
 	float horizontalFOV = 80;
 	SetHorizontalFieldOfView( Utl::DegToRad( horizontalFOV ) );
 
+	// set viewport
+	SViewPort viewport;
+	MessRenderer::CApp* app = MessRenderer::CApp::GetActiveApp();
+	if( app ) {
+		float winWidth, winHeight;
+		app->GetWindowSize( winWidth, winHeight );
+		viewport._width = (us)winWidth;
+		viewport._height = (us)winHeight;
+	}
+
+	SetViewport( viewport );
+
+	
 }
 
 void CView::updateWorld2ViewMatrix() {
@@ -245,7 +261,7 @@ void CView::updateViewPort() {
     }
 }
 
-const CView::SViewPort* CView::GetViewPort() {
+CView::SViewPort* CView::GetViewPort() {
 	if( ( _dirtyFlags & _DIRTY_FLAG_VIEW_PORT ) != 0 ) {
 		updateViewPort();
 	}
@@ -318,15 +334,10 @@ void CView::SetHorizontalPerspective( float t_perspective ) {
 
 	_view2ProjMatrix[0][0] = t_perspective;
 
-	float defaultAspect = 800.f / 600.f;
-    MessRenderer::CApp* activeApp = MessRenderer::CApp::GetActiveApp();
-    if( activeApp) {
-        float winWidth, winHeight;
-        activeApp->GetWindowSize( winWidth, winHeight );
-        defaultAspect = winWidth / winHeight;
-    }
+	SViewPort* viewport = GetViewPort();
+	float aspect = (float)viewport->_width / (float)viewport->_height;
 
-	float verticalPerspective = t_perspective * defaultAspect;
+	float verticalPerspective = t_perspective * aspect;
 	_view2ProjMatrix[1][1] = verticalPerspective;
 
 	// dirty flags
@@ -347,6 +358,13 @@ void CView::SetAspectRatio( float t_aspect ) {
 	// dirty flags
 	_dirtyFlags |= _DIRTY_FLAG_VIEW_TO_PROJ_MATRIX | _DIRTY_FLAG_PROJ_TO_VIEW_MATRIX | _DIRTY_FLAG_WORLD_TO_PROJ_MATRIX;
 
+}
+
+void CView::SetViewport( const SViewPort& t_viewport ) {
+	SViewPort* viewport = GetViewPort();
+	*viewport = t_viewport;
+
+	SetAspectRatio( (float)viewport->_width / (float)viewport->_height );
 }
 
 

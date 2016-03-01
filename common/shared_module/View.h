@@ -38,6 +38,15 @@ public:
 			_maxZ = 1;
 			_minZ = -1;
 		}
+
+		void SetAsActive() {
+			glViewport( _x, _y, _width, _height );
+			// also do the scissor test
+			// so functions like glClearColor will obey the viewport
+			glScissor( _x, _y, _width, _height );
+			glEnable( GL_SCISSOR_TEST );
+
+		}
 	};
 
 	struct SFrustum {
@@ -183,7 +192,7 @@ public:
     const mat4& GetView2ProjMatrix();
     const mat4& GetProj2ViewMatrix();
     const mat4& GetWorld2ProjMatrix();
-    const SViewPort* GetViewPort();
+    SViewPort* GetViewPort();
 
     void GetCameraPosition( vec4& t_pos );
     void GetCameraPositionFaceUpAndRight( vec4& t_pos, vec4& t_face, vec4& t_up, vec4& t_right );
@@ -229,6 +238,7 @@ public:
 
 	void SetAspectRatio( float t_aspect );
 
+	void SetViewport( const SViewPort& t_viewport );
 };
 
 void View_SetAsActive( CView* t_view );
