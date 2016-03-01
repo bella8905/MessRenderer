@@ -101,7 +101,7 @@ void CFreeFlyCamera::UpdateControl( double t_delta ) {
 				{
 					float delta = abs( deltaX ) > abs( deltaY ) ? (float)deltaX : (float)deltaY;
 					float dist = glm::distance( _pos, _aim );
-					dist = max( dist - delta * _cameraHehaviors[b]._speed * (float)t_delta, 1.f );
+					dist = max( dist - delta * _cameraHehaviors[b]._speed * (float)t_delta, 0.5f );
 					vec4 facing = glm::normalize( _aim - _pos ); 
 					_pos = _aim - facing * dist;
 				} break;
@@ -120,7 +120,12 @@ void CFreeFlyCamera::UpdateControl( double t_delta ) {
 void CFreeFlyCamera::UpdateView( CView* t_view ) {
 	if( !t_view ) return;
 
-	t_view->SetCameraPostionFaceAndUp( _pos, glm::normalize( _aim - _pos ), _up );
+	vec3 facing = vec3( _aim - _pos );
+	if( Utl::Equals( glm::length( facing ), 0.f )  ) {
+		facing = vec3( 0.f, 0.f, -1.f );
+	}
+
+	t_view->SetCameraPostionFaceAndUp( _pos, Utl::ToDirection( facing ), _up );
 }
 
 void CFreeFlyCamera::Update( double t_delta ) {
