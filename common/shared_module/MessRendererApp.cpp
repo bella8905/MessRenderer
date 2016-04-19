@@ -185,9 +185,109 @@ namespace MessRenderer {
 		LogError << "GLFW ERROR: code " << t_error << " msg: " << t_desc << LogEndl;
 	}
 
+    void CApp::_onDebugMessage( unsigned int t_source,
+                                unsigned int t_type,
+                                unsigned int t_id,
+                                unsigned int t_severity,
+                                int t_length,
+                                const char* t_message,
+                                void* t_userParam ) {
+        char src_str[2048]; /* source */
+        char type_str[2048]; /* type */
+        char sev_str[2048]; /* severity */
+
+        switch( t_source ) {
+            case 0x8246:
+                strcpy( src_str, "API" );
+                break;
+            case 0x8247:
+                strcpy( src_str, "WINDOW_SYSTEM" );
+                break;
+            case 0x8248:
+                strcpy( src_str, "SHADER_COMPILER" );
+                break;
+            case 0x8249:
+                strcpy( src_str, "THIRD_PARTY" );
+                break;
+            case 0x824A:
+                strcpy( src_str, "APPLICATION" );
+                break;
+            case 0x824B:
+                strcpy( src_str, "OTHER" );
+                break;
+            default:
+                strcpy( src_str, "undefined" );
+                break;
+        }
+
+        switch( t_type ) {
+            case 0x824C:
+                strcpy( type_str, "ERROR" );
+                break;
+            case 0x824D:
+                strcpy( type_str, "DEPRECATED_BEHAVIOR" );
+                break;
+            case 0x824E:
+                strcpy( type_str, "UNDEFINED_BEHAVIOR" );
+                break;
+            case 0x824F:
+                strcpy( type_str, "PORTABILITY" );
+                break;
+            case 0x8250:
+                strcpy( type_str, "PERFORMANCE" );
+                break;
+            case 0x8251:
+                strcpy( type_str, "OTHER" );
+                break;
+            case 0x8268:
+                strcpy( type_str, "MARKER" );
+                break;
+            case 0x8269:
+                strcpy( type_str, "PUSH_GROUP" );
+                break;
+            case 0x826A:
+                strcpy( type_str, "POP_GROUP" );
+                break;
+            default:
+                strcpy( type_str, "undefined" );
+                break;
+        }
+
+        switch( t_severity ) {
+            case 0x9146:
+                strcpy( sev_str, "HIGH" );
+                break;
+            case 0x9147:
+                strcpy( sev_str, "MEDIUM" );
+                break;
+            case 0x9148:
+                strcpy( sev_str, "LOW" );
+                break;
+            case 0x826B:
+                strcpy( sev_str, "NOTIFICATION" );
+                break;
+            default:
+                strcpy( sev_str, "undefined" );
+                break;
+        }
+
+        LogError << "source: " << src_str << "type: " << type_str << "id: " << t_id << "severity: " << sev_str << "length: " << t_length << "message: " << t_message << "user param: " << *(int*)t_userParam << LogEndl;
+
+    }
+
 	void CApp::_glfw_onError( int t_error, const char* t_desc ) {
 		_activeApp->_onError( t_error, t_desc );
 	}
+
+    void CApp::_debugCallback( unsigned int t_source,
+                               unsigned int t_type,
+                               unsigned int t_id,
+                               unsigned int t_severity,
+                               int t_length,
+                               const char* t_message,
+                               void* t_userParam ) {
+        _activeApp->_onDebugMessage( t_source, t_type, t_id, t_severity, t_length, t_message, t_userParam );
+    }
 
 
 	void CApp::_logGLParams() {
@@ -283,6 +383,16 @@ namespace MessRenderer {
 		// mark functions deprecation
 		glfwWindowHint( GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE );
 		glfwWindowHint( GLFW_SAMPLES, _info._FSAASamples );
+        if( _info._flags._debug ) {
+            glfwWindowHint( GLFW_OPENGL_DEBUG_CONTEXT, GL_TRUE );
+            if( GLEW_KHR_debug ) {
+                int param = -1;
+                glDebugMessageCallback( ( GLDEBUGPROC )_debugCallback, &param );
+                glEnable( GL_DEBUG_OUTPUT_SYNCHRONOUS );
+            } else {
+                LogWarning << "debug features not supported" << LogEndl;
+            }
+        }
 
 		// create window
 		if( _info._flags._fullScreen ) {

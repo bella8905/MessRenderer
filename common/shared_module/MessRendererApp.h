@@ -103,6 +103,13 @@ namespace MessRenderer {
 		virtual void _onDrop( int t_count, const char** t_paths );
 		virtual void _onError( int t_error, const char* t_desc );
 
+        virtual void _onDebugMessage( unsigned int source,
+                                      unsigned int type,
+                                      unsigned int id,
+                                      unsigned int severity,
+                                      int length,
+                                      const char* message,
+                                      void* userParam );
 		/////////////////////////////////////////////////////////////////
 		//
 		//  glfw
@@ -135,6 +142,14 @@ namespace MessRenderer {
 		//  
 		/////////////////////////////////////////////////////////////////
 		void _screenPrint();
+
+        static void _debugCallback( unsigned int t_source,
+                                    unsigned int t_type,
+                                    unsigned int t_id,
+                                    unsigned int t_severity,
+                                    int t_length,
+                                    const char* t_message,
+                                    void* t_userParam );
 
 	public:
 		void Run();

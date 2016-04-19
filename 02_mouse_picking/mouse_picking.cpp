@@ -118,17 +118,18 @@ void _gui_onKeyPressed( int t_key, int t_mod ) {
 
 Utl::SRay _getRayFromMouse( const float& t_posx, const float& t_posy ) {
     // nds ( -1 , 1 )
-    float x = ( 2.f * t_posx ) / g_winWidth - 1.f;
-    float y = 1.f - ( 2.f * t_posy ) / g_winHeight;
-    vec3 dir_nds( x, y, 1.f );
-    vec4 dir_clip( dir_nds.x, dir_nds.y, -1.f, 0.f );
-    // get the current used camera's proj matrix
-    vec4 dir_eye = glm::inverse( g_simpleCam.GetProjMat() ) * dir_clip;
-    dir_eye = vec4( dir_eye.x, dir_eye.y, -1.f, 0.f );
-    Utl::SRay ray_eye( vec4( 0.f, 0.f, 0.f, 1.f ), dir_eye );
-    Utl::SRay ray_wor = ray_eye.Transform( glm::inverse( g_simpleCam.GetViewMat() ) );
-
-    return ray_wor;
+//     float x = ( 2.f * t_posx ) / g_winWidth - 1.f;
+//     float y = 1.f - ( 2.f * t_posy ) / g_winHeight;
+//     vec3 dir_nds( x, y, 1.f );
+//     vec4 dir_clip( dir_nds.x, dir_nds.y, -1.f, 0.f );
+//     // get the current used camera's proj matrix
+//     vec4 dir_eye = glm::inverse( g_simpleCam.GetProjMat() ) * dir_clip;
+//     dir_eye = vec4( dir_eye.x, dir_eye.y, -1.f, 0.f );
+//     Utl::SRay ray_eye( vec4( 0.f, 0.f, 0.f, 1.f ), dir_eye );
+//     Utl::SRay ray_wor = ray_eye.Transform( glm::inverse( g_simpleCam.GetViewMat() ) );
+// 
+//     return ray_wor;
+    return Utl::SRay();
 }
 
 
@@ -304,20 +305,20 @@ void _updateFPSCounter( GLFWwindow* t_window ) {
 // this function is only called when value in gui changed.
 // so we can expect some benefits than brutally update view matrix every frame
 void TW_CALL _setCameraPosCB( const void* t_value, void* t_clientData ) {
-    CSimpleCamera* cam = ( CSimpleCamera* )t_clientData;
-    if( cam == 0 )   return;
-
-    vec3 newPos( ( (float*)t_value )[0],  ( (float*)t_value )[1],  ( (float*)t_value )[2] ); 
-    cam->SetPos( newPos );
+//     CSimpleCamera* cam = ( CSimpleCamera* )t_clientData;
+//     if( cam == 0 )   return;
+// 
+//     vec3 newPos( ( (float*)t_value )[0],  ( (float*)t_value )[1],  ( (float*)t_value )[2] ); 
+//     cam->SetPos( newPos );
 
 }
 
 // function called when we get the camera pos to show in tweakbar
 void TW_CALL _getCameraPosCB( void* t_value, void* t_clientData ) {
-    CCamera* cam = ( CCamera* )t_clientData;
-    if( cam == 0 )    return;
-
-    memcpy( t_value, &( cam->GetPos().x ), 3 * sizeof( float ) );
+//     CCamera* cam = ( CCamera* )t_clientData;
+//     if( cam == 0 )    return;
+// 
+//     memcpy( t_value, &( cam->GetPos().x ), 3 * sizeof( float ) );
 }
 
 
@@ -404,7 +405,7 @@ void update( GLFWwindow* t_window )
         
         float angle = angle_degree * Utl::g_o2Pi;
         vec3 axis = glm::normalize( axis_unnormailzed );
-        mat3 rot_matrix = Utl::ToMat3( glm::rotate( mat4(1.f), angle, axis ) );
+        mat3 rot_matrix/* = Utl::ToMat3( glm::rotate( mat4(1.f), angle, axis ) )*/;
 
         // use quaternion
         glm::quat rotQuat = glm::angleAxis( angle, axis );
@@ -502,7 +503,7 @@ int main()
 	CView view;
 	view.SetCameraPostionFaceAndUp( Utl::ToPositon( camPos ), Utl::ToDirection( camFace ) );
 	view.SetHorizontalFieldOfView( Utl::DegToRad( 80.f ) );
-	View_SetAsActive( view );
+	View_SetAsActive( &view );
 
     // light
     vec3 lightPos( 0.f, 0.f, 2.f );
@@ -578,7 +579,7 @@ int main()
     TwType _TW_TYPE_VEC3F = TwDefineStruct( "Position", _tw_vec3Members, 3, sizeof(glm::vec3), NULL, NULL );
     
     // camera  pos   
-    TwAddVarCB( bar, "camPos", _TW_TYPE_VEC3F, _setCameraPosCB, _getCameraPosCB, ( void* )( &g_simpleCam ),  " label='camera position' opened=true help='camera position' ");
+    // TwAddVarCB( bar, "camPos", _TW_TYPE_VEC3F, _setCameraPosCB, _getCameraPosCB, ( void* )( &g_simpleCam ),  " label='camera position' opened=true help='camera position' ");
     
 
     // - Directly redirect GLFW mouse button events to AntTweakBar

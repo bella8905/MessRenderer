@@ -451,7 +451,7 @@ void CAreaCountingShader::PostDraw() {
 	glColorMask( GL_TRUE, GL_TRUE, GL_TRUE, GL_TRUE );
 	glDepthMask( GL_TRUE );
 
-	glMemoryBarrier( GL_ATOMIC_COUNTER_BARRIER_BIT );
+	// glMemoryBarrier( GL_ATOMIC_COUNTER_BARRIER_BIT );
 	// read back
 	glBindBuffer( GL_ATOMIC_COUNTER_BUFFER, _area_buffer );
 	GLuint* area = ( GLuint* )glMapBufferRange( GL_ATOMIC_COUNTER_BUFFER, 0, sizeof( GLuint ), GL_MAP_READ_BIT );
